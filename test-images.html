@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Image Display</title>
+</head>
+<body>
+    <h2>Test Image Display</h2>
+    <p>Testing if uploaded images are accessible:</p>
+    
+    <div>
+        <h3>Direct Image URLs:</h3>
+        <p><a href="http://localhost:5000/uploads/logo-1773308379410-77716701.png" target="_blank">http://localhost:5000/uploads/logo-1773308379410-77716701.png</a></p>
+        <p><a href="http://localhost:5000/uploads/logo-1773308087028-429541460.png" target="_blank">http://localhost:5000/uploads/logo-1773308087028-429541460.png</a></p>
+    </div>
+    
+    <div>
+        <h3>Image Display Test:</h3>
+        <img src="http://localhost:5000/uploads/logo-1773308379410-77716701.png" alt="Test Logo" style="max-height: 100px; border: 1px solid #ccc;">
+        <br><br>
+        <img src="http://localhost:5000/uploads/logo-1773308087028-429541460.png" alt="Test Logo 2" style="max-height: 100px; border: 1px solid #ccc;">
+    </div>
+    
+    <div>
+        <h3>Current Site Config Test:</h3>
+        <button onclick="testSiteConfig()">Get Site Config</button>
+        <div id="configResult"></div>
+    </div>
+    
+    <script>
+        async function testSiteConfig() {
+            try {
+                const response = await fetch('http://localhost:5000/api/site-config');
+                const data = await response.json();
+                document.getElementById('configResult').innerHTML = 
+                    `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+            } catch (error) {
+                document.getElementById('configResult').innerHTML = 
+                    `<p style="color: red;">Error: ${error.message}</p>`;
+            }
+        }
+    </script>
+</body>
+</html>

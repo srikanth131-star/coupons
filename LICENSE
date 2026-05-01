@@ -1,0 +1,172 @@
+CouponsScript Proprietary License Agreement
+Version 1.0 — Effective Date: 2026
+
+Copyright (c) 2026 BrewCode. All Rights Reserved.
+
+================================================================================
+
+1. DEFINITIONS
+
+"Software" refers to the CouponsScript application, including but not limited to
+the Next.js frontend, Express.js backend, all source code, configuration files,
+database schemas, API endpoints, admin panel, UI components, themes, layouts,
+stylesheets, scripts, documentation, and any associated assets.
+
+"Licensor" refers to the copyright holder of CouponsScript.
+
+"Licensee" refers to any individual or entity that has been granted a valid
+license to use the Software.
+
+"End User" refers to any person who accesses or interacts with a deployed
+instance of the Software.
+
+================================================================================
+
+2. GRANT OF LICENSE
+
+Subject to the terms of this Agreement, the Licensor grants the Licensee a
+limited, non-exclusive, non-transferable, revocable license to:
+
+  a) Install and run the Software on servers owned or controlled by the Licensee.
+  b) Modify the Software solely for the Licensee's own internal use.
+  c) Deploy the Software as a web application for the Licensee's business.
+
+================================================================================
+
+3. RESTRICTIONS
+
+The Licensee SHALL NOT:
+
+  a) Redistribute, sublicense, sell, lease, or otherwise transfer the Software
+     or any portion thereof to any third party.
+  b) Remove, alter, or obscure any copyright, trademark, or proprietary notices
+     contained in the Software.
+  c) Use the Software to create a competing product or service.
+  d) Reverse engineer, decompile, or disassemble any compiled portions of the
+     Software, except as permitted by applicable law.
+  e) Share, publish, or make publicly available the source code or any
+     derivative works.
+  f) Use the Software in any manner that violates applicable laws or regulations.
+  g) Resell or white-label the Software without a separate written agreement
+     from the Licensor.
+
+================================================================================
+
+4. INTELLECTUAL PROPERTY
+
+  a) The Software and all copies thereof are proprietary to the Licensor and
+     title thereto remains in the Licensor.
+  b) All rights in the Software not specifically granted in this Agreement are
+     reserved to the Licensor.
+  c) The Licensee retains ownership of any content, data, images, and media
+     uploaded or created through the Software's admin panel or CMS.
+  d) Custom themes, layouts (Navbar/Footer variants), and UI configurations
+     created through the admin panel remain the Licensee's property, but the
+     underlying code remains the Licensor's property.
+
+================================================================================
+
+5. THIRD-PARTY DEPENDENCIES & SERVICES
+
+The Software incorporates third-party open-source libraries, each subject to
+their own license terms. Key dependencies include but are not limited to:
+
+  - Next.js, React, React DOM — MIT License
+  - Redux Toolkit, React Redux — MIT License
+  - Tailwind CSS — MIT License
+  - MUI (Material UI) — MIT License
+  - Framer Motion — MIT License
+  - Axios — MIT License
+  - Mongoose — MIT License
+  - Express.js — MIT License
+  - Cypress — MIT License
+  - Lucide React, React Icons — MIT/ISC License
+  - React Quill — MIT License
+
+The Licensee is responsible for complying with all third-party license terms.
+A full list of dependencies and their licenses can be found in the respective
+package.json files.
+
+The Software integrates with the following external services, each governed by
+their own terms of service:
+
+  - Cloudinary (image hosting and transformation)
+  - Google Analytics 4 (analytics and event tracking)
+  - MongoDB Atlas (database hosting, if applicable)
+
+The Licensor is not responsible for changes to third-party service terms,
+pricing, or availability.
+
+================================================================================
+
+6. DATA & PRIVACY
+
+  a) The Licensee is solely responsible for the collection, storage, and
+     processing of End User data through the Software.
+  b) The Licensee must comply with all applicable data protection laws and
+     regulations (including GDPR, CCPA, and similar legislation) when deploying
+     the Software.
+  c) The Software provides CMS page templates for Privacy Policy, Terms &
+     Conditions, and Cookie Policy. The Licensee is responsible for customizing
+     these to reflect their actual data practices.
+  d) Database credentials, API keys, JWT secrets, and other sensitive
+     configuration stored in .env files are the Licensee's responsibility to
+     secure.
+
+================================================================================
+
+7. WARRANTY DISCLAIMER
+
+THE SOFTWARE IS PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE, AND NONINFRINGEMENT. THE LICENSOR DOES NOT
+WARRANT THAT THE SOFTWARE WILL BE ERROR-FREE, SECURE, OR UNINTERRUPTED.
+
+================================================================================
+
+8. LIMITATION OF LIABILITY
+
+IN NO EVENT SHALL THE LICENSOR BE LIABLE FOR ANY INDIRECT, INCIDENTAL, SPECIAL,
+CONSEQUENTIAL, OR PUNITIVE DAMAGES, INCLUDING BUT NOT LIMITED TO LOSS OF
+PROFITS, DATA, BUSINESS OPPORTUNITIES, OR GOODWILL, ARISING OUT OF OR IN
+CONNECTION WITH THE USE OR INABILITY TO USE THE SOFTWARE, EVEN IF THE LICENSOR
+HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
+
+THE LICENSOR'S TOTAL LIABILITY SHALL NOT EXCEED THE AMOUNT PAID BY THE LICENSEE
+FOR THE SOFTWARE LICENSE.
+
+================================================================================
+
+9. TERMINATION
+
+  a) This license is effective until terminated.
+  b) The Licensor may terminate this license immediately if the Licensee
+     breaches any term of this Agreement.
+  c) Upon termination, the Licensee must destroy all copies of the Software
+     and certify such destruction in writing.
+  d) Sections 4, 7, 8, and 10 shall survive termination.
+
+================================================================================
+
+10. GOVERNING LAW
+
+This Agreement shall be governed by and construed in accordance with the laws
+of India, and the courts of Bangalore, Karnataka, India shall have exclusive
+jurisdiction over any disputes arising under this Agreement.
+
+================================================================================
+
+11. ENTIRE AGREEMENT
+
+This Agreement constitutes the entire agreement between the parties concerning
+the Software and supersedes all prior agreements, understandings, negotiations,
+and discussions, whether oral or written.
+
+================================================================================
+
+For licensing inquiries, contact:
+
+BrewCode
+#198, CMH Road, 2nd Floor, Desk No.269
+Indiranagar, Bangalore, India 560038
+Email: contact@brewcode.co

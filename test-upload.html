@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Logo Upload</title>
+</head>
+<body>
+    <h2>Test Logo Upload</h2>
+    <div id="status">Testing upload endpoint...</div>
+    <form id="uploadForm" enctype="multipart/form-data">
+        <input type="file" id="logoFile" name="logo" accept="image/*" required>
+        <button type="submit">Upload Logo</button>
+    </form>
+    <div id="result"></div>
+
+    <script src="upload-test.js"></script>
+    <script>
+        document.getElementById('uploadForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const formData = new FormData();
+            const fileInput = document.getElementById('logoFile');
+            formData.append('logo', fileInput.files[0]);
+            
+            try {
+                console.log('Manual upload test...');
+                const response = await fetch('http://localhost:5000/api/upload/logo', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const result = await response.json();
+                document.getElementById('result').innerHTML = 
+                    `<pre>${JSON.stringify(result, null, 2)}</pre>`;
+            } catch (error) {
+                document.getElementById('result').innerHTML = 
+                    `<p style="color: red;">Error: ${error.message}</p>`;
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,115 @@
+### Coupons Script API Tests
+### Install "REST Client" extension in VS Code to use this file
+### Click "Send Request" above each request to test
+
+@baseUrl = http://localhost:5000/api
+
+### ============================================
+### STORE APIs (5)
+### ============================================
+
+### 1. Get All Stores
+GET {{baseUrl}}/stores
+
+### 2. Get Store by Slug
+GET {{baseUrl}}/stores/amazon
+
+### 3. Create Store
+POST {{baseUrl}}/stores
+Content-Type: application/json
+
+{
+  "name": "Amazon",
+  "slug": "amazon",
+  "logo": "https://logo.clearbit.com/amazon.com",
+  "description": "World's largest online retailer",
+  "website": "https://amazon.com"
+}
+
+### 4. Update Store (replace :id with actual store ID)
+PUT {{baseUrl}}/stores/STORE_ID_HERE
+Content-Type: application/json
+
+{
+  "name": "Amazon Updated",
+  "description": "Updated description"
+}
+
+### 5. Delete Store (replace :id with actual store ID)
+DELETE {{baseUrl}}/stores/STORE_ID_HERE
+
+### ============================================
+### COUPON APIs (7)
+### ============================================
+
+### 6. Get All Coupons
+GET {{baseUrl}}/coupons
+
+### 7. Get Coupon by ID (replace :id with actual coupon ID)
+GET {{baseUrl}}/coupons/COUPON_ID_HERE
+
+### 8. Get Coupons by Store (replace :storeId with actual store ID)
+GET {{baseUrl}}/coupons/store/STORE_ID_HERE
+
+### 9. Get Coupons by Category
+GET {{baseUrl}}/coupons/category/electronics
+
+### 10. Create Coupon (replace store ID)
+POST {{baseUrl}}/coupons
+Content-Type: application/json
+
+{
+  "title": "50% Off Electronics",
+  "code": "SAVE50",
+  "description": "Get 50% off on all electronics",
+  "discount": "50% OFF",
+  "store": "STORE_ID_HERE",
+  "expiryDate": "2024-12-31",
+  "isActive": true,
+  "isFeatured": true
+}
+
+### 11. Update Coupon (replace :id with actual coupon ID)
+PUT {{baseUrl}}/coupons/COUPON_ID_HERE
+Content-Type: application/json
+
+{
+  "title": "60% Off Electronics - Updated",
+  "discount": "60% OFF"
+}
+
+### 12. Delete Coupon (replace :id with actual coupon ID)
+DELETE {{baseUrl}}/coupons/COUPON_ID_HERE
+
+### ============================================
+### ANALYTICS APIs (2)
+### ============================================
+
+### 13. Reveal Coupon Code (replace :couponId with actual coupon ID)
+POST {{baseUrl}}/coupons/reveal/COUPON_ID_HERE
+
+### 14. Track Coupon Click (replace :id with actual coupon ID)
+POST {{baseUrl}}/coupons/COUPON_ID_HERE/click
+
+### ============================================
+### SEARCH & TRENDING APIs (2)
+### ============================================
+
+### 15. Search Coupons
+GET {{baseUrl}}/search?query=discount
+
+### 16. Get Trending Coupons
+GET {{baseUrl}}/coupons/trending
+
+### Get Trending with Limit
+GET {{baseUrl}}/coupons/trending?limit=5
+
+### ============================================
+### TEST ENDPOINTS
+### ============================================
+
+### API Status Check
+GET {{baseUrl}}/test/status
+
+### Test Dashboard
+GET http://localhost:5000/api/test

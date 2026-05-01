@@ -1,0 +1,58 @@
+{
+  "name": "coupons-script-server",
+  "version": "1.0.0",
+  "description": "Express.js REST API server for Coupons Script marketplace - handles stores, coupons, deals, admin auth, and analytics",
+  "type": "module",
+  "license": "PROPRIETARY",
+  "author": {
+    "name": "BrewCode",
+    "email": "contact@brewcode.co",
+    "url": "https://brewcode.co"
+  },
+  "homepage": "https://github.com/coupons-script/backend",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/coupons-script/backend.git"
+  },
+  "keywords": [
+    "coupons",
+    "deals",
+    "marketplace",
+    "express",
+    "mongodb",
+    "rest-api",
+    "jwt-auth",
+    "ga4-analytics"
+  ],
+  "scripts": {
+    "build": "echo No build step required",
+    "dev": "nodemon server.js",
+    "start": "node server.js",
+    "test": "cypress run",
+    "cypress:run": "cypress run",
+    "cypress:open": "cypress open",
+    "test:open": "cypress open",
+    "test:backend": "cypress run --spec 'cypress/e2e/backend-apis/**/*.cy.js'",
+    "test:frontend": "cypress run --spec 'cypress/e2e/frontend-apis/**/*.cy.js'",
+    "test:admin": "cypress run --spec 'cypress/e2e/backend-apis/admin-apis/**/*.cy.js'",
+    "test:stores": "cypress run --spec 'cypress/e2e/backend-apis/store-apis/**/*.cy.js'",
+    "test:coupons": "cypress run --spec 'cypress/e2e/backend-apis/coupon-*/**/*.cy.js'",
+    "test:analytics": "cypress run --spec 'cypress/e2e/backend-apis/analytics-apis/**/*.cy.js'",
+    "test:homepage": "cypress run --spec 'cypress/e2e/frontend-apis/homepage-apis/**/*.cy.js'"
+  },
+  "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "cloudinary": "^2.9.0",
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "jsonwebtoken": "^9.0.3",
+    "mongoose": "^8.0.3",
+    "multer": "^2.1.1"
+  },
+  "devDependencies": {
+    "cypress": "^15.11.0",
+    "nodemon": "^3.0.2"
+  }
+}
