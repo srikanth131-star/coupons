@@ -5,7 +5,7 @@ Cypress.Commands.add('adminLogin', () => {
   return cy.request({
     method: 'POST',
     url: `${baseUrl}/api/auth/login`,
-    body: { email: 'admin@couponsscript.com', password: 'admin123' },
+    body: { email: 'admin@couponsfeast.com', password: 'admin123' },
     failOnStatusCode: false
   }).then((res) => {
     if (res.status === 200 && res.body.token) {
@@ -15,7 +15,7 @@ Cypress.Commands.add('adminLogin', () => {
     // Admin doesn't exist, create via direct DB task then retry
     return cy.task('seedAdmin').then(() => {
       return cy.request('POST', `${baseUrl}/api/auth/login`, {
-        email: 'admin@couponsscript.com',
+        email: 'admin@couponsfeast.com',
         password: 'admin123'
       }).then((loginRes) => {
         Cypress.env('authToken', loginRes.body.token);

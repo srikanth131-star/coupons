@@ -28,7 +28,7 @@ npm run dev              # Start with nodemon (localhost:5000)
 | GA4_MEASUREMENT_ID | Google Analytics 4 Measurement ID | ❌ | - |
 | GA4_API_SECRET | Google Analytics 4 API Secret | ❌ | - |
 | CORS_ORIGINS | Allowed CORS origins (comma-separated) | ❌ | http://localhost:3000,http://127.0.0.1:3000 |
-| ADMIN_EMAIL | Default admin email for seeding | ❌ | admin@couponsscript.com |
+| ADMIN_EMAIL | Default admin email for seeding | ❌ | admin@couponsfeast.com |
 | ADMIN_PASSWORD | Default admin password for seeding | ❌ | admin123 |
 | ADMIN_NAME | Default admin name for seeding | ❌ | Admin |
 | CLOUDINARY_CLOUD_NAME | Cloudinary cloud name | ✅ | - |

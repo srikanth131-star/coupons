@@ -44,10 +44,10 @@ module.exports = defineConfig({
             await ensureConnected()
             const bcrypt = require('bcryptjs')
             const col = mongoose.connection.db.collection('admins')
-            const exists = await col.findOne({ email: 'admin@couponsscript.com' })
+            const exists = await col.findOne({ email: 'admin@couponsfeast.com' })
             if (!exists) {
               const hash = await bcrypt.hash('admin123', 10)
-              await col.insertOne({ email: 'admin@couponsscript.com', password: hash, name: 'Admin', createdAt: new Date(), updatedAt: new Date() })
+              await col.insertOne({ email: 'admin@couponsfeast.com', password: hash, name: 'Admin', createdAt: new Date(), updatedAt: new Date() })
             }
             return null
           } catch (error) {

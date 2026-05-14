@@ -42,7 +42,7 @@ export const seedAdmin = async () => {
   try {
     const count = await Admin.countDocuments();
     if (count === 0) {
-      const email = process.env.ADMIN_EMAIL || 'admin@couponsscript.com';
+      const email = process.env.ADMIN_EMAIL || 'admin@couponsfeast.com';
       const password = process.env.ADMIN_PASSWORD || 'admin123';
       const name = process.env.ADMIN_NAME || 'Admin';
       await Admin.create({ email, password, name });
