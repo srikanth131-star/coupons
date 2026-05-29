@@ -1,7 +1,7 @@
 import jwt from 'jsonwebtoken';
 import Admin from '../models/Admin.js';
 
-const ACCESS_TOKEN_EXPIRES = '15m';
+const ACCESS_TOKEN_EXPIRES = '7d';
 const REFRESH_TOKEN_EXPIRES = '30d';
 
 const generateAccessToken = (admin) => {
@@ -9,7 +9,7 @@ const generateAccessToken = (admin) => {
 };
 
 const generateRefreshToken = (admin) => {
-  return jwt.sign({ id: admin._id }, process.env.JWT_SECRET, { expiresIn: REFRESH_TOKEN_EXPIRES });
+  return jwt.sign({ id: admin._id, type: 'refresh' }, process.env.JWT_SECRET, { expiresIn: REFRESH_TOKEN_EXPIRES });
 };
 
 export const login = async (req, res) => {
@@ -26,20 +26,12 @@ export const login = async (req, res) => {
     const accessToken = generateAccessToken(admin);
     const refreshToken = generateRefreshToken(admin);
 
-    // Save refresh token in DB (use updateOne to avoid triggering pre-save password hash)
+    // Save refresh token in DB
     await Admin.updateOne({ _id: admin._id }, { refreshToken });
-
-    // Set refresh token as httpOnly cookie (30 days)
-    res.cookie('refreshToken', refreshToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
-      maxAge: 30 * 24 * 60 * 60 * 1000,
-      path: '/',
-    });
 
     res.json({
       token: accessToken,
+      refreshToken,
       admin: { id: admin._id, email: admin.email, name: admin.name },
     });
   } catch (error) {
@@ -67,8 +59,9 @@ export const verify = async (req, res) => {
 
 export const refresh = async (req, res) => {
   try {
-    const refreshToken = req.cookies?.refreshToken;
-    if (!refreshToken) return res.status(401).json({ error: 'No refresh token' });
+    // Accept refresh token from request body
+    const { refreshToken } = req.body;
+    if (!refreshToken) return res.status(401).json({ error: 'No refresh token provided' });
 
     // Verify the refresh token
     const decoded = jwt.verify(refreshToken, process.env.JWT_SECRET);
@@ -77,22 +70,14 @@ export const refresh = async (req, res) => {
     const admin = await Admin.findOne({ _id: decoded.id, refreshToken });
     if (!admin) return res.status(401).json({ error: 'Invalid refresh token' });
 
-    // Generate new access token
+    // Generate new tokens
     const newAccessToken = generateAccessToken(admin);
-
-    // Optionally rotate refresh token for extra security
     const newRefreshToken = generateRefreshToken(admin);
+
+    // Rotate refresh token in DB
     await Admin.updateOne({ _id: admin._id }, { refreshToken: newRefreshToken });
 
-    res.cookie('refreshToken', newRefreshToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
-      maxAge: 30 * 24 * 60 * 60 * 1000,
-      path: '/',
-    });
-
-    res.json({ token: newAccessToken });
+    res.json({ token: newAccessToken, refreshToken: newRefreshToken });
   } catch (error) {
     res.status(401).json({ error: 'Invalid refresh token' });
   }
@@ -100,19 +85,10 @@ export const refresh = async (req, res) => {
 
 export const logout = async (req, res) => {
   try {
-    const refreshToken = req.cookies?.refreshToken;
+    const { refreshToken } = req.body;
     if (refreshToken) {
-      // Clear refresh token from DB
       await Admin.findOneAndUpdate({ refreshToken }, { refreshToken: null });
     }
-
-    res.clearCookie('refreshToken', {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
-      path: '/',
-    });
-
     res.json({ message: 'Logged out successfully' });
   } catch (error) {
     res.status(500).json({ error: error.message });

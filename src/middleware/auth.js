@@ -9,7 +9,10 @@ const authMiddleware = (req, res, next) => {
     req.adminId = decoded.id;
     next();
   } catch (error) {
-    res.status(401).json({ error: 'Invalid or expired token' });
+    if (error.name === 'TokenExpiredError') {
+      return res.status(401).json({ error: 'Token expired', code: 'TOKEN_EXPIRED' });
+    }
+    res.status(401).json({ error: 'Invalid token' });
   }
 };
 
