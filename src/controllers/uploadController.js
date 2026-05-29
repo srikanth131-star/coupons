@@ -22,7 +22,17 @@ export const uploadLogo = async (req, res) => {
     }
 
     const logoType = req.body.logoType || 'image';
+    const oldPublicId = req.body.oldPublicId || null;
     const base64 = `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`;
+
+    // Delete old image from Cloudinary if provided
+    if (oldPublicId) {
+      try {
+        await getCloudinary().uploader.destroy(oldPublicId);
+      } catch (e) {
+        console.log('Failed to delete old image:', e.message);
+      }
+    }
 
     const result = await getCloudinary().uploader.upload(base64, {
       folder: `coupon-feast/${logoType}s`,
@@ -45,25 +55,15 @@ export const deleteLogo = async (req, res) => {
   try {
     const { filename } = req.params;
 
-    // Validate filename has a proper extension
-    if (!filename || !/\.[a-zA-Z0-9]+$/.test(filename)) {
+    if (!filename) {
       return res.status(400).json({ error: 'Invalid filename' });
-    }
-
-    // Reject special characters that are not valid in filenames
-    if (/[!@#$%^&*()+=\[\]{}|;:'",<>?]/.test(filename)) {
-      return res.status(400).json({ error: 'Filename contains invalid characters' });
     }
 
     const publicId = decodeURIComponent(filename);
     const result = await getCloudinary().uploader.destroy(publicId);
 
-    if (result.result === 'ok') {
+    if (result.result === 'ok' || result.result === 'not found') {
       return res.json({ message: 'Image deleted successfully' });
-    }
-
-    if (result.result === 'not found') {
-      return res.status(404).json({ error: 'File not found' });
     }
 
     res.status(500).json({ error: 'Failed to delete image', result });
