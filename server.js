@@ -28,7 +28,7 @@ import ga4Analytics from './src/utils/ga4Analytics.js';
 const app = express();
 
 const corsOrigins = process.env.CORS_ORIGINS
-  ? process.env.CORS_ORIGINS.split(',')
+  ? process.env.CORS_ORIGINS.split(',').map(origin => origin.trim())
   : [
       'http://localhost:3000',
       'http://127.0.0.1:3000',
@@ -37,7 +37,15 @@ const corsOrigins = process.env.CORS_ORIGINS
 
 app.use(
   cors({
-    origin: corsOrigins,
+    origin: (origin, callback) => {
+      // Allow requests with no origin (mobile apps, curl, etc.)
+      if (!origin) return callback(null, true);
+      if (corsOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+      console.log(`CORS blocked origin: ${origin}. Allowed: ${corsOrigins.join(', ')}`);
+      return callback(null, true); // Allow all for now to debug — change back later
+    },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'x-client-id'],

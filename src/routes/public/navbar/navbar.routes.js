@@ -8,8 +8,11 @@ const router = express.Router();
 router.use(trackGA4APIMiddleware);
 
 // ==========================================
-// PUBLIC NAVBAR APIs (1 endpoint)
+// PUBLIC NAVBAR APIs (2 endpoints)
 // ==========================================
+
+// GET /api/public/navbar/items - Get active navbar items (public)
+router.get("/items", cmsController.getPublicNavbarItems);
 
 // GET /api/public/navbar/navigation - Get navigation
 router.get("/navigation", cmsController.getNavigation);

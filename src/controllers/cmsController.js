@@ -392,6 +392,25 @@ export const getNavbarItems = async (req, res) => {
   }
 };
 
+// Public version - only returns active items, no auth required
+export const getPublicNavbarItems = async (req, res) => {
+  try {
+    const items = await NavbarItem.find({ isActive: true })
+      .sort({ order: 1 })
+      .select('title url target order');
+    
+    res.json({
+      success: true,
+      data: items
+    });
+  } catch (error) {
+    res.status(500).json({ 
+      success: false,
+      error: error.message 
+    });
+  }
+};
+
 export const createNavbarItem = async (req, res) => {
   try {
     const itemData = {
