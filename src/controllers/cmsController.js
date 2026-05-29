@@ -21,12 +21,16 @@ export const getSiteConfig = async (req, res) => {
 export const updateSiteConfig = async (req, res) => {
   try {
     let config = await SiteConfig.findOne();
+    
+    // Strip immutable/internal fields
+    const { _id, __v, createdAt, updatedAt, _selectedSeoPage, ...body } = req.body;
+    
     if (!config) {
-      config = await SiteConfig.create(req.body);
+      config = await SiteConfig.create(body);
     } else {
       // Deep merge to prevent wiping nested fields
       const update = {};
-      for (const [key, value] of Object.entries(req.body)) {
+      for (const [key, value] of Object.entries(body)) {
         if (value && typeof value === 'object' && !Array.isArray(value)) {
           const existing = config[key]?.toObject?.() || config[key] || {};
           update[key] = { ...existing, ...value };
@@ -34,7 +38,7 @@ export const updateSiteConfig = async (req, res) => {
           update[key] = value;
         }
       }
-      config = await SiteConfig.findOneAndUpdate({}, { $set: update }, { new: true });
+      config = await SiteConfig.findOneAndUpdate({}, { $set: update }, { new: true, runValidators: false });
     }
     res.json(config);
   } catch (error) {
