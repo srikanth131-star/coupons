@@ -26,9 +26,8 @@ export const login = async (req, res) => {
     const accessToken = generateAccessToken(admin);
     const refreshToken = generateRefreshToken(admin);
 
-    // Save refresh token in DB
-    admin.refreshToken = refreshToken;
-    await admin.save();
+    // Save refresh token in DB (use updateOne to avoid triggering pre-save password hash)
+    await Admin.updateOne({ _id: admin._id }, { refreshToken });
 
     // Set refresh token as httpOnly cookie (30 days)
     res.cookie('refreshToken', refreshToken, {
@@ -83,8 +82,7 @@ export const refresh = async (req, res) => {
 
     // Optionally rotate refresh token for extra security
     const newRefreshToken = generateRefreshToken(admin);
-    admin.refreshToken = newRefreshToken;
-    await admin.save();
+    await Admin.updateOne({ _id: admin._id }, { refreshToken: newRefreshToken });
 
     res.cookie('refreshToken', newRefreshToken, {
       httpOnly: true,
