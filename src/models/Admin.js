@@ -5,6 +5,7 @@ const adminSchema = new mongoose.Schema({
   email: { type: String, required: true, unique: true, lowercase: true, trim: true },
   password: { type: String, required: true },
   name: { type: String, default: 'Admin' },
+  refreshToken: { type: String, default: null },
 }, { timestamps: true });
 
 adminSchema.pre('save', async function (next) {
