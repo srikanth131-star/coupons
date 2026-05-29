@@ -27,7 +27,7 @@ router.use("/admin", authMiddleware, adminRoutes);
 // API Documentation and Status
 router.get("/docs", (req, res) => {
   res.json({
-    message: "Coupons Script Unified API Documentation",
+    message: "Coupons Feast Unified API Documentation",
     version: "3.0.0",
     architecture: "Unified Backend with Admin + Public APIs",
     categories: {

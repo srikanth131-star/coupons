@@ -63,7 +63,7 @@ app.use('/api', routes);
 
 app.get('/', (req, res) => {
   res.json({
-    message: 'Coupons Script API Running',
+    message: 'Coupons Feast API Running',
     version: '1.0.0',
     totalAPIs: 16,
     testEndpoint: '/api/test',
