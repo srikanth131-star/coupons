@@ -114,4 +114,43 @@ router.get('/detailed', async (req, res) => {
   }
 });
 
+// GET /api/admin/health/db-check - Check database collections and counts
+router.get('/db-check', async (req, res) => {
+  try {
+    const dbState = mongoose.connection.readyState;
+    const dbName = mongoose.connection.name;
+    const dbHost = mongoose.connection.host;
+    
+    // Get collection counts
+    const collections = await mongoose.connection.db.listCollections().toArray();
+    const counts = {};
+    for (const col of collections) {
+      counts[col.name] = await mongoose.connection.db.collection(col.name).countDocuments();
+    }
+
+    // Check a specific ID if provided
+    let idCheck = null;
+    if (req.query.id && req.query.collection) {
+      try {
+        const doc = await mongoose.connection.db.collection(req.query.collection).findOne({ 
+          _id: new mongoose.Types.ObjectId(req.query.id) 
+        });
+        idCheck = { found: !!doc, collection: req.query.collection, id: req.query.id };
+      } catch (e) {
+        idCheck = { found: false, error: e.message };
+      }
+    }
+
+    res.json({
+      success: true,
+      database: { name: dbName, host: dbHost, state: dbState === 1 ? 'connected' : 'disconnected' },
+      collections: counts,
+      idCheck,
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
 export default router;

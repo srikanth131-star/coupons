@@ -65,7 +65,10 @@ export const getCouponById = async (req, res) => {
   const clientId = getClientId(req);
   
   try {
-    const coupon = await Coupon.findById(req.params.id).populate("store category tags");
+    let coupon = await Coupon.findById(req.params.id).populate("store category tags");
+    if (!coupon) {
+      coupon = await Coupon.findOne({ _id: req.params.id }).populate("store category tags");
+    }
     
     if (!coupon) {
       await ga4Analytics.trackError('/api/coupons/:id', 'GET', 'Coupon not found', 404, clientId);
@@ -141,7 +144,10 @@ export const updateCoupon = async (req, res) => {
   const clientId = getClientId(req);
   
   try {
-    const coupon = await Coupon.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    let coupon = await Coupon.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    if (!coupon) {
+      coupon = await Coupon.findOneAndUpdate({ _id: req.params.id }, req.body, { new: true });
+    }
     
     if (!coupon) {
       await ga4Analytics.trackError('/api/coupons/:id', 'PUT', 'Coupon not found', 404, clientId);
@@ -171,12 +177,19 @@ export const deleteCoupon = async (req, res) => {
   const clientId = getClientId(req);
   
   try {
-    const coupon = await Coupon.findByIdAndDelete(req.params.id);
+    console.log(`[DELETE COUPON] Attempting to delete coupon: ${req.params.id}`);
+    let coupon = await Coupon.findByIdAndDelete(req.params.id);
+    if (!coupon) {
+      coupon = await Coupon.findOneAndDelete({ _id: req.params.id });
+    }
     
     if (!coupon) {
+      console.log(`[DELETE COUPON] Coupon not found: ${req.params.id}`);
       await ga4Analytics.trackError('/api/coupons/:id', 'DELETE', 'Coupon not found', 404, clientId);
       return res.status(404).json({ error: "Coupon not found" });
     }
+    
+    console.log(`[DELETE COUPON] Successfully deleted: ${coupon.title} (${req.params.id})`);
     
     // Track coupon deletion
     ga4Analytics.sendEvent('coupon_deleted', {

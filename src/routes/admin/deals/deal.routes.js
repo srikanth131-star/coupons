@@ -30,7 +30,10 @@ router.put("/update/:id", async (req, res) => {
   try {
     const data = { ...req.body };
     if (!data.store) delete data.store;
-    const deal = await Deal.findByIdAndUpdate(req.params.id, data, { new: true });
+    let deal = await Deal.findByIdAndUpdate(req.params.id, data, { new: true });
+    if (!deal) {
+      deal = await Deal.findOneAndUpdate({ _id: req.params.id }, data, { new: true });
+    }
     if (!deal) return res.status(404).json({ success: false, error: "Deal not found" });
     res.json({ success: true, data: deal });
   } catch (error) {
@@ -41,10 +44,19 @@ router.put("/update/:id", async (req, res) => {
 // DELETE /api/admin/deals/delete/:id - Delete deal
 router.delete("/delete/:id", async (req, res) => {
   try {
-    const deal = await Deal.findByIdAndDelete(req.params.id);
-    if (!deal) return res.status(404).json({ success: false, error: "Deal not found" });
+    console.log(`[DELETE DEAL] Attempting to delete deal: ${req.params.id}`);
+    let deal = await Deal.findByIdAndDelete(req.params.id);
+    if (!deal) {
+      deal = await Deal.findOneAndDelete({ _id: req.params.id });
+    }
+    if (!deal) {
+      console.log(`[DELETE DEAL] Deal not found: ${req.params.id}`);
+      return res.status(404).json({ success: false, error: "Deal not found" });
+    }
+    console.log(`[DELETE DEAL] Successfully deleted: ${deal.title} (${req.params.id})`);
     res.json({ success: true, message: "Deal deleted" });
   } catch (error) {
+    console.error(`[DELETE DEAL] Error: ${error.message}`);
     res.status(500).json({ success: false, error: error.message });
   }
 });

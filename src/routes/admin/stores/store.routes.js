@@ -35,9 +35,11 @@ router.post("/bulk-delete", async (req, res) => {
     if (!ids?.length) return res.status(400).json({ error: 'No IDs provided' });
     let couponsDeleted = 0;
     if (deleteCoupons) {
-      const couponResult = await Coupon.deleteMany({ store: { $in: ids } });
+      // Handle both string and ObjectId _id for coupons referencing stores
+      const couponResult = await Coupon.deleteMany({ $or: [{ store: { $in: ids } }] });
       couponsDeleted = couponResult.deletedCount;
     }
+    // Use $or to match both string _id and ObjectId _id
     const result = await Store.deleteMany({ _id: { $in: ids } });
     res.json({ message: `${result.deletedCount} store(s) deleted, ${couponsDeleted} coupon(s) removed` });
   } catch (error) {

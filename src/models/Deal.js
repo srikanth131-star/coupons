@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
 
 const dealSchema = new mongoose.Schema({
+  _id: { type: mongoose.Schema.Types.Mixed },
   title: { type: String, required: true },
   description: String,
   discount: String,

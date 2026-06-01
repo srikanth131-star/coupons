@@ -16,7 +16,6 @@ import cookieParser from 'cookie-parser';
 import connectDB from './src/config/database.js';
 import routes from './src/routes/index.js';
 
-import { seedAllData } from './src/utils/seedData.js';
 import { seedAdmin } from './src/controllers/authController.js';
 
 // Load environment variables FIRST
@@ -101,7 +100,7 @@ app.listen(PORT, async () => {
   console.log(`API Status: http://localhost:${PORT}/api/test/status`);
 
   await seedAdmin();
-  await seedAllData();
+  // seedAllData removed - no longer seeding demo data
 
   // Drop stale unique index on coupon 'code' field
   try {

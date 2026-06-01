@@ -8,7 +8,9 @@ const connectDB = async () => {
 
     console.log("Connecting to MongoDB Atlas...");
     
+    const dbName = process.env.DB_NAME || 'couponsscript';
     const conn = await mongoose.connect(process.env.MONGODB_URI, {
+      dbName,
       serverSelectionTimeoutMS: 10000,
       socketTimeoutMS: 45000,
     });

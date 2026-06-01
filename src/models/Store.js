@@ -2,6 +2,7 @@ import mongoose from "mongoose";
 
 const storeSchema = new mongoose.Schema(
   {
+    _id: { type: mongoose.Schema.Types.Mixed },
     storeName: { type: String, required: true },
     slug: { type: String, unique: true, required: true },
     logo: String,

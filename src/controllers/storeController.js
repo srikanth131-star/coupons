@@ -79,7 +79,11 @@ export const getStoreById = async (req, res) => {
   const clientId = getClientId(req);
   
   try {
-    const store = await Store.findById(req.params.id);
+    // Try finding by ObjectId first, then by string _id
+    let store = await Store.findById(req.params.id);
+    if (!store) {
+      store = await Store.findOne({ _id: req.params.id });
+    }
     
     if (!store) {
       await ga4Analytics.trackError('/api/admin/stores/details/:id', 'GET', 'Store not found', 404, clientId);
@@ -147,7 +151,11 @@ export const updateStore = async (req, res) => {
       if (existing) return res.status(400).json({ error: 'Store already exists with this slug' });
     }
 
-    const store = await Store.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    // Try finding by ObjectId first, then by string _id
+    let store = await Store.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    if (!store) {
+      store = await Store.findOneAndUpdate({ _id: req.params.id }, req.body, { new: true });
+    }
     
     if (!store) {
       await ga4Analytics.trackError('/api/stores/:id', 'PUT', 'Store not found', 404, clientId);
@@ -180,12 +188,21 @@ export const deleteStore = async (req, res) => {
   const clientId = getClientId(req);
   
   try {
-    const store = await Store.findByIdAndDelete(req.params.id);
+    console.log(`[DELETE STORE] Attempting to delete store: ${req.params.id}`);
+    
+    // Try finding by ObjectId first, then by string _id
+    let store = await Store.findByIdAndDelete(req.params.id);
+    if (!store) {
+      store = await Store.findOneAndDelete({ _id: req.params.id });
+    }
     
     if (!store) {
+      console.log(`[DELETE STORE] Store not found: ${req.params.id}`);
       await ga4Analytics.trackError('/api/stores/:id', 'DELETE', 'Store not found', 404, clientId);
       return res.status(404).json({ error: "Store not found" });
     }
+    
+    console.log(`[DELETE STORE] Successfully deleted: ${store.storeName} (${req.params.id})`);
 
     // Only delete associated coupons when explicitly requested by admin
     let couponsDeleted = 0;

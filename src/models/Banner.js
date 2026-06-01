@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
 
 const bannerSchema = new mongoose.Schema({
+  _id: { type: mongoose.Schema.Types.Mixed },
   title: { type: String, required: [true, 'Title is required'] },
   subtitle: { type: String },
   buttonText: { type: String },
