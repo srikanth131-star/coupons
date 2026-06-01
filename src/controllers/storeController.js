@@ -147,8 +147,15 @@ export const updateStore = async (req, res) => {
   
   try {
     if (req.body.slug) {
-      const existing = await Store.findOne({ slug: req.body.slug, _id: { $ne: req.params.id } });
-      if (existing) return res.status(400).json({ error: 'Store already exists with this slug' });
+      // Check if another store has this slug (exclude current store by both string and ObjectId _id)
+      const existing = await Store.findOne({ 
+        slug: req.body.slug, 
+        _id: { $ne: req.params.id, $nin: [req.params.id] } 
+      });
+      // Double check: if found, make sure it's actually a different store
+      if (existing && existing._id.toString() !== req.params.id) {
+        return res.status(400).json({ error: 'Store already exists with this slug' });
+      }
     }
 
     // Try finding by ObjectId first, then by string _id
