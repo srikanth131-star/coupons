@@ -1,19 +1,14 @@
 import mongoose from "mongoose";
-
-const categorySchema = new mongoose.Schema({
-  name: { type: String, required: true },
-  slug: { type: String, required: true, unique: true },
-  icon: String
-}, { timestamps: true });
-
-export const Category = mongoose.model("Category", categorySchema);
+import Category from "./Category.js";
 
 const tagSchema = new mongoose.Schema({
   name: { type: String, required: true },
   slug: { type: String, required: true, unique: true }
 }, { timestamps: true });
 
-export const Tag = mongoose.model("Tag", tagSchema);
+export const Tag = mongoose.models.Tag || mongoose.model("Tag", tagSchema);
+
+export { Category };
 
 const couponClickSchema = new mongoose.Schema({
   coupon: { type: mongoose.Schema.Types.ObjectId, ref: "Coupon", required: true },
@@ -21,7 +16,7 @@ const couponClickSchema = new mongoose.Schema({
   userAgent: String
 }, { timestamps: true });
 
-export const CouponClick = mongoose.model("CouponClick", couponClickSchema);
+export const CouponClick = mongoose.models.CouponClick || mongoose.model("CouponClick", couponClickSchema);
 
 // Export Notification model
 export { Notification } from './Notification.js';

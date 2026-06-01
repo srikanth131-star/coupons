@@ -25,15 +25,17 @@ router.delete("/delete/:id", categoryController.deleteCategory);
 
 // POST /api/admin/categories/bulk-delete
 router.post("/bulk-delete", async (req, res) => {
-  const { Category } = await import("../../../models/index.js");
+  const Category = (await import("../../../models/Category.js")).default;
   const mongoose = (await import("mongoose")).default;
   try {
     const { ids } = req.body;
     if (!ids?.length) return res.status(400).json({ error: 'No IDs provided' });
     const objectIds = ids.filter(id => mongoose.Types.ObjectId.isValid(id)).map(id => new mongoose.Types.ObjectId(id));
     const result = await Category.deleteMany({ $or: [{ _id: { $in: objectIds } }, { _id: { $in: ids } }] });
+    console.log(`[BULK DELETE CATEGORIES] Requested: ${ids.length}, Deleted: ${result.deletedCount}`);
     res.json({ message: `${result.deletedCount} category(ies) deleted` });
   } catch (error) {
+    console.error(`[BULK DELETE CATEGORIES] Error:`, error.message);
     res.status(500).json({ error: error.message });
   }
 });

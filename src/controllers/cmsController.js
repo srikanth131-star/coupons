@@ -215,12 +215,13 @@ export const getPage = async (req, res) => {
 export const updatePage = async (req, res) => {
   try {
     const { pageName } = req.params;
+    const data = cleanUpdateData(req.body);
     let page = await Page.findOne({ page: pageName });
     
     if (!page) {
-      page = await Page.create({ page: pageName, ...req.body });
+      page = await Page.create({ page: pageName, ...data });
     } else {
-      page = await Page.findOneAndUpdate({ page: pageName }, req.body, { new: true });
+      page = await Page.findOneAndUpdate({ page: pageName }, data, { new: true });
     }
     
     res.json(page);

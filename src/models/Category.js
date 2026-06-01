@@ -1,12 +1,6 @@
 import mongoose from 'mongoose';
 
-// Clear any existing model to ensure fresh validation
-if (mongoose.models.Category) {
-  delete mongoose.models.Category;
-}
-
 const categorySchema = new mongoose.Schema({
-  _id: { type: mongoose.Schema.Types.Mixed, default: () => new mongoose.Types.ObjectId() },
   name: {
     type: String,
     required: true,
@@ -65,4 +59,4 @@ categorySchema.pre('validate', function() {
   }
 });
 
-export default mongoose.model('Category', categorySchema);
+export default mongoose.models.Category || mongoose.model('Category', categorySchema);

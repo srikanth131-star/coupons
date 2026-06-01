@@ -31,14 +31,16 @@ router.post("/bulk-delete", async (req, res) => {
       .filter(id => mongoose.Types.ObjectId.isValid(id))
       .map(id => new mongoose.Types.ObjectId(id));
     
+    // Try matching by _id with both formats, and also by string comparison
     const result = await Tag.deleteMany({ 
       $or: [
         { _id: { $in: objectIds } },
-        { _id: { $in: ids } }
+        { _id: { $in: ids } },
+        { _id: { $in: ids.map(id => id.toString()) } }
       ]
     });
     
-    console.log(`[BULK DELETE TAGS] Requested: ${ids.length}, Deleted: ${result.deletedCount}`);
+    console.log(`[BULK DELETE TAGS] Requested: ${ids.length}, Deleted: ${result.deletedCount}, IDs: ${JSON.stringify(ids)}`);
     res.json({ message: `${result.deletedCount} tag(s) deleted` });
   } catch (error) {
     console.error(`[BULK DELETE TAGS] Error:`, error.message);

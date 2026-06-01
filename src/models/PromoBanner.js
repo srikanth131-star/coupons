@@ -1,7 +1,6 @@
 import mongoose from "mongoose";
 
 const promoBannerSchema = new mongoose.Schema({
-  _id: { type: mongoose.Schema.Types.Mixed, default: () => new mongoose.Types.ObjectId() },
   logo: { type: String, default: 'amazon' },
   text: { type: String, required: true },
   buttonLabel: { type: String, default: 'Get Deal' },
