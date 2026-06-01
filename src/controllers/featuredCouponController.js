@@ -124,9 +124,10 @@ export const createFeaturedCoupon = async (req, res) => {
     const featuredCoupon = new FeaturedCoupon(featuredCouponData);
     await featuredCoupon.save();
     
-    // Return the coupon data with isFeatured property
+    // Return the featured coupon data with the FeaturedCoupon _id (needed for update/delete)
     const responseData = {
-      _id: coupon._id,
+      _id: featuredCoupon._id,
+      couponId: coupon._id,
       title: coupon.title,
       code: coupon.code,
       discount: coupon.discount,
@@ -136,9 +137,11 @@ export const createFeaturedCoupon = async (req, res) => {
       expiryDate: coupon.expiryDate,
       isFeatured: true,
       clickCount: coupon.clickCount,
-      isActive: coupon.isActive,
-      createdAt: coupon.createdAt,
-      updatedAt: coupon.updatedAt
+      isActive: featuredCoupon.isActive,
+      priority: featuredCoupon.priority,
+      order: featuredCoupon.order,
+      createdAt: featuredCoupon.createdAt,
+      updatedAt: featuredCoupon.updatedAt
     };
     
     res.status(201).json({

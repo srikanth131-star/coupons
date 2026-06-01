@@ -8,8 +8,19 @@ export const getCoupons = async (req, res) => {
   const userProps = getUserProperties(req);
   
   try {
-    const { sort, store, category, tag, limit = 20 } = req.query;
-    let query = { isActive: true };
+    const { sort, store, category, tag, limit = 20, status } = req.query;
+    let query = {};
+    
+    // For admin routes, show all coupons; for public, only active
+    // If status filter is provided, use it; otherwise default to active only for public
+    if (status === 'all') {
+      // No filter - show all
+    } else if (status === 'inactive') {
+      query.isActive = false;
+    } else if (status === 'active' || !req.adminId) {
+      query.isActive = true;
+    }
+    // If req.adminId exists (admin route) and no status filter, show all
     
     if (store) query.store = store;
     if (category) query.category = category;

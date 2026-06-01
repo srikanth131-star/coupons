@@ -22,6 +22,17 @@ router.get("/", async (req, res) => {
   }
 });
 
+// GET /api/admin/banner/list - List ALL banners (alias)
+router.get("/list", async (req, res) => {
+  const { Banner } = await import("../../../models/Banner.js");
+  try {
+    const banners = await Banner.find().populate('store', 'storeName slug').sort({ createdAt: -1 });
+    res.json({ success: true, data: banners });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
 // POST /api/admin/banner/create - Create banner
 router.post("/create", cmsController.createBanner);
 
@@ -30,5 +41,18 @@ router.put("/update/:id", cmsController.updateBanner);
 
 // DELETE /api/admin/banner/delete/:id - Delete banner
 router.delete("/delete/:id", cmsController.deleteBanner);
+
+// POST /api/admin/banner/bulk-delete - Bulk delete banners
+router.post("/bulk-delete", async (req, res) => {
+  const { Banner } = await import("../../../models/Banner.js");
+  try {
+    const { ids } = req.body;
+    if (!ids?.length) return res.status(400).json({ success: false, error: 'No IDs provided' });
+    const result = await Banner.deleteMany({ _id: { $in: ids } });
+    res.json({ success: true, message: `${result.deletedCount} banner(s) deleted` });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
 
 export default router;
