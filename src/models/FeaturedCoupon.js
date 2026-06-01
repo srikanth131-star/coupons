@@ -1,7 +1,7 @@
 import mongoose from 'mongoose';
 
 const featuredCouponSchema = new mongoose.Schema({
-  _id: { type: mongoose.Schema.Types.Mixed },
+  _id: { type: mongoose.Schema.Types.Mixed, default: () => new mongoose.Types.ObjectId() },
   couponId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Coupon',

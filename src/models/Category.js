@@ -6,7 +6,7 @@ if (mongoose.models.Category) {
 }
 
 const categorySchema = new mongoose.Schema({
-  _id: { type: mongoose.Schema.Types.Mixed },
+  _id: { type: mongoose.Schema.Types.Mixed, default: () => new mongoose.Types.ObjectId() },
   name: {
     type: String,
     required: true,

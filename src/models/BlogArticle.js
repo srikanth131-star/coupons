@@ -25,7 +25,7 @@ const relatedPostSchema = new mongoose.Schema({
 }, { _id: false });
 
 const blogArticleSchema = new mongoose.Schema({
-  _id: { type: mongoose.Schema.Types.Mixed },
+  _id: { type: mongoose.Schema.Types.Mixed, default: () => new mongoose.Types.ObjectId() },
   title: { type: String, required: true },
   slug: { type: String, required: true, unique: true },
   category: { type: String, default: '' },
