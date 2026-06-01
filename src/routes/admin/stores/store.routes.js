@@ -30,17 +30,17 @@ router.delete("/delete/:id", storeController.deleteStore);
 router.post("/bulk-delete", async (req, res) => {
   const Store = (await import("../../../models/Store.js")).default;
   const Coupon = (await import("../../../models/Coupon.js")).default;
+  const mongoose = (await import("mongoose")).default;
   try {
     const { ids, deleteCoupons } = req.body;
     if (!ids?.length) return res.status(400).json({ error: 'No IDs provided' });
+    const objectIds = ids.filter(id => mongoose.Types.ObjectId.isValid(id)).map(id => new mongoose.Types.ObjectId(id));
     let couponsDeleted = 0;
     if (deleteCoupons) {
-      // Handle both string and ObjectId _id for coupons referencing stores
-      const couponResult = await Coupon.deleteMany({ $or: [{ store: { $in: ids } }] });
+      const couponResult = await Coupon.deleteMany({ $or: [{ store: { $in: objectIds } }, { store: { $in: ids } }] });
       couponsDeleted = couponResult.deletedCount;
     }
-    // Use $or to match both string _id and ObjectId _id
-    const result = await Store.deleteMany({ _id: { $in: ids } });
+    const result = await Store.deleteMany({ $or: [{ _id: { $in: objectIds } }, { _id: { $in: ids } }] });
     res.json({ message: `${result.deletedCount} store(s) deleted, ${couponsDeleted} coupon(s) removed` });
   } catch (error) {
     res.status(500).json({ error: error.message });

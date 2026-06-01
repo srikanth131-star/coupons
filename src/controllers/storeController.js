@@ -1,7 +1,9 @@
+import mongoose from "mongoose";
 import Store from "../models/Store.js";
 import Coupon from "../models/Coupon.js";
 import ga4Analytics from "../utils/ga4Analytics.js";
 import { getClientId } from "../middleware/ga4Analytics.js";
+import { buildIdFilter, cleanUpdateData, excludeIdFilter } from "../utils/idHelper.js";
 
 export const getStores = async (req, res) => {
   const clientId = getClientId(req);
@@ -79,11 +81,9 @@ export const getStoreById = async (req, res) => {
   const clientId = getClientId(req);
   
   try {
-    // Try finding by ObjectId first, then by string _id
-    let store = await Store.findById(req.params.id);
-    if (!store) {
-      store = await Store.findOne({ _id: req.params.id });
-    }
+    const filter = buildIdFilter(req.params.id);
+    
+    let store = await Store.findOne(filter);
     
     if (!store) {
       await ga4Analytics.trackError('/api/admin/stores/details/:id', 'GET', 'Store not found', 404, clientId);
@@ -146,23 +146,22 @@ export const updateStore = async (req, res) => {
   const clientId = getClientId(req);
   
   try {
-    if (req.body.slug) {
-      // Check if another store has this slug (exclude current store by both string and ObjectId _id)
+    const id = req.params.id;
+    const updateData = cleanUpdateData(req.body);
+    const filter = buildIdFilter(id);
+
+    if (updateData.slug) {
+      // Check if another store has this slug (exclude current store)
       const existing = await Store.findOne({ 
-        slug: req.body.slug, 
-        _id: { $ne: req.params.id, $nin: [req.params.id] } 
+        slug: updateData.slug, 
+        _id: excludeIdFilter(id)
       });
-      // Double check: if found, make sure it's actually a different store
-      if (existing && existing._id.toString() !== req.params.id) {
+      if (existing && existing._id.toString() !== id) {
         return res.status(400).json({ error: 'Store already exists with this slug' });
       }
     }
 
-    // Try finding by ObjectId first, then by string _id
-    let store = await Store.findByIdAndUpdate(req.params.id, req.body, { new: true });
-    if (!store) {
-      store = await Store.findOneAndUpdate({ _id: req.params.id }, req.body, { new: true });
-    }
+    let store = await Store.findOneAndUpdate(filter, updateData, { new: true });
     
     if (!store) {
       await ga4Analytics.trackError('/api/stores/:id', 'PUT', 'Store not found', 404, clientId);
@@ -195,13 +194,11 @@ export const deleteStore = async (req, res) => {
   const clientId = getClientId(req);
   
   try {
-    console.log(`[DELETE STORE] Attempting to delete store: ${req.params.id}`);
+    const id = req.params.id;
+    const filter = buildIdFilter(id);
+    console.log(`[DELETE STORE] Attempting to delete store: ${id}`);
     
-    // Try finding by ObjectId first, then by string _id
-    let store = await Store.findByIdAndDelete(req.params.id);
-    if (!store) {
-      store = await Store.findOneAndDelete({ _id: req.params.id });
-    }
+    let store = await Store.findOneAndDelete(filter);
     
     if (!store) {
       console.log(`[DELETE STORE] Store not found: ${req.params.id}`);
@@ -214,7 +211,9 @@ export const deleteStore = async (req, res) => {
     // Only delete associated coupons when explicitly requested by admin
     let couponsDeleted = 0;
     if (req.query.deleteCoupons === 'true') {
-      const couponResult = await Coupon.deleteMany({ store: req.params.id });
+      const id = req.params.id;
+      const storeObjectId = mongoose.Types.ObjectId.isValid(id) ? new mongoose.Types.ObjectId(id) : id;
+      const couponResult = await Coupon.deleteMany({ $or: [{ store: storeObjectId }, { store: id }] });
       couponsDeleted = couponResult.deletedCount;
     }
     

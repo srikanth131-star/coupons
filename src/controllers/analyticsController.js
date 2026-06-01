@@ -2,6 +2,7 @@ import Coupon from "../models/Coupon.js";
 import { CouponClick } from "../models/index.js";
 import ga4Analytics from "../utils/ga4Analytics.js";
 import { getClientId } from "../middleware/ga4Analytics.js";
+import { buildIdFilter } from "../utils/idHelper.js";
 
 // POST /api/coupons/reveal/:id
 export const revealCoupon = async (req, res) => {
@@ -9,8 +10,8 @@ export const revealCoupon = async (req, res) => {
   
   try {
     const { id } = req.params;
-    
-    const coupon = await Coupon.findById(id).populate('store');
+    const filter = buildIdFilter(id);
+    const coupon = await Coupon.findOne(filter).populate('store');
     
     if (!coupon) {
       await ga4Analytics.trackError('/api/coupons/reveal/:id', 'POST', 'Coupon not found', 404, clientId);

@@ -1,5 +1,6 @@
 import express from "express";
 import PromoBanner from "../../../models/PromoBanner.js";
+import { buildIdFilter, cleanUpdateData } from "../../../utils/idHelper.js";
 
 const router = express.Router();
 
@@ -23,7 +24,9 @@ router.post("/create", async (req, res) => {
 
 router.put("/update/:id", async (req, res) => {
   try {
-    const banner = await PromoBanner.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    const filter = buildIdFilter(req.params.id);
+    const data = cleanUpdateData(req.body);
+    const banner = await PromoBanner.findOneAndUpdate(filter, data, { new: true });
     if (!banner) return res.status(404).json({ success: false, error: "Promo banner not found" });
     res.json({ success: true, data: banner });
   } catch (error) {
@@ -33,7 +36,8 @@ router.put("/update/:id", async (req, res) => {
 
 router.delete("/delete/:id", async (req, res) => {
   try {
-    const banner = await PromoBanner.findByIdAndDelete(req.params.id);
+    const filter = buildIdFilter(req.params.id);
+    const banner = await PromoBanner.findOneAndDelete(filter);
     if (!banner) return res.status(404).json({ success: false, error: "Promo banner not found" });
     res.json({ success: true, message: "Promo banner deleted" });
   } catch (error) {

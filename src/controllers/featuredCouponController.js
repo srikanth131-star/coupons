@@ -1,5 +1,6 @@
 import FeaturedCoupon from '../models/FeaturedCoupon.js';
 import Coupon from '../models/Coupon.js';
+import { buildIdFilter, cleanUpdateData } from '../utils/idHelper.js';
 
 // Get all featured coupons
 export const getFeaturedCoupons = async (req, res) => {
@@ -171,19 +172,11 @@ export const createFeaturedCoupon = async (req, res) => {
 // Update featured coupon
 export const updateFeaturedCoupon = async (req, res) => {
   try {
-    const updateData = {
-      ...req.body,
-      featured: true // Maintain featured status
-    };
+    const filter = buildIdFilter(req.params.id);
+    const data = cleanUpdateData(req.body);
+    data.featured = true; // Maintain featured status
     
-    const coupon = await FeaturedCoupon.findByIdAndUpdate(
-      req.params.id, 
-      updateData, 
-      { 
-        new: true,
-        runValidators: true
-      }
-    ).populate('couponId');
+    const coupon = await FeaturedCoupon.findOneAndUpdate(filter, data, { new: true, runValidators: true }).populate('couponId');
     
     if (!coupon) {
       return res.status(404).json({ 
@@ -213,7 +206,8 @@ export const updateFeaturedCoupon = async (req, res) => {
 // Delete featured coupon
 export const deleteFeaturedCoupon = async (req, res) => {
   try {
-    const coupon = await FeaturedCoupon.findByIdAndDelete(req.params.id);
+    const filter = buildIdFilter(req.params.id);
+    const coupon = await FeaturedCoupon.findOneAndDelete(filter);
     if (!coupon) {
       return res.status(404).json({ 
         success: false,

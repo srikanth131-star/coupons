@@ -1,4 +1,5 @@
 import { Notification } from '../models/Notification.js';
+import { buildIdFilter } from '../utils/idHelper.js';
 
 // Send notification
 export const sendNotification = async (req, res) => {
@@ -157,8 +158,8 @@ export const listNotifications = async (req, res) => {
 export const getNotification = async (req, res) => {
   try {
     const { id } = req.params;
-
-    const notification = await Notification.findById(id).select('-__v');
+    const filter = buildIdFilter(id);
+    const notification = await Notification.findOne(filter).select('-__v');
 
     if (!notification) {
       return res.status(404).json({
@@ -185,8 +186,8 @@ export const getNotification = async (req, res) => {
 export const deleteNotification = async (req, res) => {
   try {
     const { id } = req.params;
-
-    const notification = await Notification.findByIdAndDelete(id);
+    const filter = buildIdFilter(id);
+    const notification = await Notification.findOneAndDelete(filter);
 
     if (!notification) {
       return res.status(404).json({

@@ -1,5 +1,6 @@
 import express from "express";
 import Deal from "../../../models/Deal.js";
+import { buildIdFilter } from "../../../utils/idHelper.js";
 
 const router = express.Router();
 
@@ -26,7 +27,8 @@ router.get("/list", async (req, res) => {
 // GET /api/public/deals/details/:id - Get deal by ID
 router.get("/details/:id", async (req, res) => {
   try {
-    const deal = await Deal.findById(req.params.id).populate("store", "storeName slug logo websiteUrl");
+    const filter = buildIdFilter(req.params.id);
+    const deal = await Deal.findOne(filter).populate("store", "storeName slug logo websiteUrl");
     if (!deal) return res.status(404).json({ success: false, error: "Deal not found" });
     res.json({ success: true, data: deal });
   } catch (error) {

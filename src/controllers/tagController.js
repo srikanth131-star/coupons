@@ -1,4 +1,5 @@
 import { Tag } from '../models/index.js';
+import { buildIdFilter, cleanUpdateData } from '../utils/idHelper.js';
 
 export const getTags = async (req, res) => {
   try {
@@ -25,10 +26,12 @@ export const createTag = async (req, res) => {
 
 export const updateTag = async (req, res) => {
   try {
-    if (req.body.name && !req.body.slug) {
-      req.body.slug = req.body.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+    const filter = buildIdFilter(req.params.id);
+    const data = cleanUpdateData(req.body);
+    if (data.name && !data.slug) {
+      data.slug = data.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
     }
-    const tag = await Tag.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true });
+    const tag = await Tag.findOneAndUpdate(filter, data, { new: true, runValidators: true });
     if (!tag) return res.status(404).json({ error: 'Tag not found' });
     res.json(tag);
   } catch (error) {
@@ -40,7 +43,8 @@ export const updateTag = async (req, res) => {
 
 export const deleteTag = async (req, res) => {
   try {
-    const tag = await Tag.findByIdAndDelete(req.params.id);
+    const filter = buildIdFilter(req.params.id);
+    const tag = await Tag.findOneAndDelete(filter);
     if (!tag) return res.status(404).json({ error: 'Tag not found' });
     res.json({ message: 'Tag deleted successfully' });
   } catch (error) {

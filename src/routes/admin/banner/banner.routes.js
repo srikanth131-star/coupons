@@ -45,10 +45,12 @@ router.delete("/delete/:id", cmsController.deleteBanner);
 // POST /api/admin/banner/bulk-delete - Bulk delete banners
 router.post("/bulk-delete", async (req, res) => {
   const { Banner } = await import("../../../models/Banner.js");
+  const mongoose = (await import("mongoose")).default;
   try {
     const { ids } = req.body;
     if (!ids?.length) return res.status(400).json({ success: false, error: 'No IDs provided' });
-    const result = await Banner.deleteMany({ _id: { $in: ids } });
+    const objectIds = ids.filter(id => mongoose.Types.ObjectId.isValid(id)).map(id => new mongoose.Types.ObjectId(id));
+    const result = await Banner.deleteMany({ $or: [{ _id: { $in: objectIds } }, { _id: { $in: ids } }] });
     res.json({ success: true, message: `${result.deletedCount} banner(s) deleted` });
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });

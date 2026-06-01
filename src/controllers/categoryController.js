@@ -1,5 +1,6 @@
 import Category from '../models/Category.js';
 import PopularStore from '../models/PopularStore.js';
+import { buildIdFilter, cleanUpdateData } from '../utils/idHelper.js';
 
 // Category Controllers
 export const getCategories = async (req, res) => {
@@ -29,14 +30,9 @@ export const createCategory = async (req, res) => {
 
 export const updateCategory = async (req, res) => {
   try {
-    const category = await Category.findByIdAndUpdate(
-      req.params.id, 
-      req.body, 
-      { 
-        new: true, 
-        runValidators: true 
-      }
-    );
+    const filter = buildIdFilter(req.params.id);
+    const data = cleanUpdateData(req.body);
+    const category = await Category.findOneAndUpdate(filter, data, { new: true, runValidators: true });
     if (!category) {
       return res.status(404).json({ error: 'Category not found' });
     }
@@ -54,7 +50,8 @@ export const updateCategory = async (req, res) => {
 
 export const deleteCategory = async (req, res) => {
   try {
-    const category = await Category.findByIdAndDelete(req.params.id);
+    const filter = buildIdFilter(req.params.id);
+    const category = await Category.findOneAndDelete(filter);
     if (!category) {
       return res.status(404).json({ error: 'Category not found' });
     }
@@ -136,18 +133,10 @@ export const createPopularStore = async (req, res) => {
 
 export const updatePopularStore = async (req, res) => {
   try {
-    const updateData = {
-      ...req.body,
-      isPopular: true // Maintain popular status
-    };
-    const store = await PopularStore.findByIdAndUpdate(
-      req.params.id, 
-      updateData, 
-      { 
-        new: true,
-        runValidators: true
-      }
-    );
+    const filter = buildIdFilter(req.params.id);
+    const data = cleanUpdateData(req.body);
+    data.isPopular = true; // Maintain popular status
+    const store = await PopularStore.findOneAndUpdate(filter, data, { new: true, runValidators: true });
     if (!store) {
       return res.status(404).json({ 
         success: false,
@@ -180,7 +169,8 @@ export const updatePopularStore = async (req, res) => {
 
 export const deletePopularStore = async (req, res) => {
   try {
-    const store = await PopularStore.findByIdAndDelete(req.params.id);
+    const filter = buildIdFilter(req.params.id);
+    const store = await PopularStore.findOneAndDelete(filter);
     if (!store) {
       return res.status(404).json({ 
         success: false,

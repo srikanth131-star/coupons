@@ -1,5 +1,6 @@
 import express from 'express';
 import { ContactMessage } from '../../../models/ContactMessage.js';
+import { buildIdFilter } from '../../../utils/idHelper.js';
 
 const router = express.Router();
 
@@ -31,8 +32,9 @@ router.get('/stats', async (req, res) => {
 // PUT /api/admin/contact-messages/:id
 router.put('/:id', async (req, res) => {
   try {
+    const filter = buildIdFilter(req.params.id);
     const { status, adminNotes } = req.body;
-    const msg = await ContactMessage.findByIdAndUpdate(req.params.id, { status, adminNotes }, { new: true });
+    const msg = await ContactMessage.findOneAndUpdate(filter, { status, adminNotes }, { new: true });
     if (!msg) return res.status(404).json({ error: 'Message not found' });
     res.json(msg);
   } catch (error) {
@@ -43,7 +45,8 @@ router.put('/:id', async (req, res) => {
 // DELETE /api/admin/contact-messages/:id
 router.delete('/:id', async (req, res) => {
   try {
-    const msg = await ContactMessage.findByIdAndDelete(req.params.id);
+    const filter = buildIdFilter(req.params.id);
+    const msg = await ContactMessage.findOneAndDelete(filter);
     if (!msg) return res.status(404).json({ error: 'Message not found' });
     res.json({ message: 'Deleted successfully' });
   } catch (error) {

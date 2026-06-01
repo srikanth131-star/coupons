@@ -1,5 +1,7 @@
 import express from "express";
+import mongoose from "mongoose";
 import Deal from "../../../models/Deal.js";
+import { buildIdFilter, cleanUpdateData } from "../../../utils/idHelper.js";
 
 const router = express.Router();
 
@@ -28,15 +30,22 @@ router.post("/create", async (req, res) => {
 // PUT /api/admin/deals/update/:id - Update deal
 router.put("/update/:id", async (req, res) => {
   try {
-    const data = { ...req.body };
+    const id = req.params.id;
+    const filter = buildIdFilter(id);
+    const data = cleanUpdateData(req.body);
     if (!data.store) delete data.store;
-    let deal = await Deal.findByIdAndUpdate(req.params.id, data, { new: true });
+    
+    let deal = await Deal.findOneAndUpdate(filter, data, { new: true });
+    
     if (!deal) {
-      deal = await Deal.findOneAndUpdate({ _id: req.params.id }, data, { new: true });
+      console.log(`[UPDATE DEAL] Deal not found with id: ${id}`);
+      return res.status(404).json({ success: false, error: "Deal not found" });
     }
-    if (!deal) return res.status(404).json({ success: false, error: "Deal not found" });
+    
+    console.log(`[UPDATE DEAL] Successfully updated: ${deal.title} (${id})`);
     res.json({ success: true, data: deal });
   } catch (error) {
+    console.error(`[UPDATE DEAL] Error:`, error.message);
     res.status(400).json({ success: false, error: error.message });
   }
 });
@@ -44,16 +53,15 @@ router.put("/update/:id", async (req, res) => {
 // DELETE /api/admin/deals/delete/:id - Delete deal
 router.delete("/delete/:id", async (req, res) => {
   try {
-    console.log(`[DELETE DEAL] Attempting to delete deal: ${req.params.id}`);
-    let deal = await Deal.findByIdAndDelete(req.params.id);
+    const id = req.params.id;
+    const filter = buildIdFilter(id);
+    console.log(`[DELETE DEAL] Attempting to delete deal: ${id}`);
+    let deal = await Deal.findOneAndDelete(filter);
     if (!deal) {
-      deal = await Deal.findOneAndDelete({ _id: req.params.id });
-    }
-    if (!deal) {
-      console.log(`[DELETE DEAL] Deal not found: ${req.params.id}`);
+      console.log(`[DELETE DEAL] Deal not found: ${id}`);
       return res.status(404).json({ success: false, error: "Deal not found" });
     }
-    console.log(`[DELETE DEAL] Successfully deleted: ${deal.title} (${req.params.id})`);
+    console.log(`[DELETE DEAL] Successfully deleted: ${deal.title} (${id})`);
     res.json({ success: true, message: "Deal deleted" });
   } catch (error) {
     console.error(`[DELETE DEAL] Error: ${error.message}`);
@@ -66,7 +74,8 @@ router.post("/bulk-delete", async (req, res) => {
   try {
     const { ids } = req.body;
     if (!ids?.length) return res.status(400).json({ success: false, error: "No IDs provided" });
-    const result = await Deal.deleteMany({ _id: { $in: ids } });
+    const objectIds = ids.map(id => mongoose.Types.ObjectId.isValid(id) ? new mongoose.Types.ObjectId(id) : id);
+    const result = await Deal.deleteMany({ $or: [{ _id: { $in: objectIds } }, { _id: { $in: ids } }] });
     res.json({ success: true, message: `${result.deletedCount} deal(s) deleted` });
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });

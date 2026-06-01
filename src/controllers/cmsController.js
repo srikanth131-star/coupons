@@ -3,6 +3,7 @@ import { Navigation } from "../models/Navigation.js";
 import { Banner } from "../models/Banner.js";
 import { Page } from "../models/Page.js";
 import { NavbarItem } from "../models/NavbarItem.js";
+import { buildIdFilter, cleanUpdateData } from "../utils/idHelper.js";
 
 // Site Config
 export const getSiteConfig = async (req, res) => {
@@ -173,9 +174,10 @@ export const createBanner = async (req, res) => {
 
 export const updateBanner = async (req, res) => {
   try {
-    const data = { ...req.body };
+    const filter = buildIdFilter(req.params.id);
+    const data = cleanUpdateData(req.body);
     if (!data.store) delete data.store;
-    const banner = await Banner.findByIdAndUpdate(req.params.id, data, { new: true, runValidators: true });
+    const banner = await Banner.findOneAndUpdate(filter, data, { new: true, runValidators: true });
     if (!banner) return res.status(404).json({ success: false, error: 'Banner not found' });
     res.json({ success: true, data: banner });
   } catch (error) {
@@ -185,7 +187,8 @@ export const updateBanner = async (req, res) => {
 
 export const deleteBanner = async (req, res) => {
   try {
-    const banner = await Banner.findByIdAndDelete(req.params.id);
+    const filter = buildIdFilter(req.params.id);
+    const banner = await Banner.findOneAndDelete(filter);
     if (!banner) return res.status(404).json({ success: false, error: 'Banner not found' });
     res.json({ success: true, message: 'Banner deleted successfully' });
   } catch (error) {
@@ -300,14 +303,9 @@ export const createPage = async (req, res) => {
 
 export const updatePageById = async (req, res) => {
   try {
-    const page = await Page.findByIdAndUpdate(
-      req.params.id, 
-      req.body, 
-      { 
-        new: true,
-        runValidators: true
-      }
-    );
+    const filter = buildIdFilter(req.params.id);
+    const data = cleanUpdateData(req.body);
+    const page = await Page.findOneAndUpdate(filter, data, { new: true, runValidators: true });
     
     if (!page) {
       return res.status(404).json({ 
@@ -336,8 +334,8 @@ export const updatePageById = async (req, res) => {
 
 export const deletePage = async (req, res) => {
   try {
-    const { id } = req.params;
-    const page = await Page.findByIdAndDelete(id);
+    const filter = buildIdFilter(req.params.id);
+    const page = await Page.findOneAndDelete(filter);
     
     if (!page) {
       return res.status(404).json({ 
@@ -449,14 +447,9 @@ export const createNavbarItem = async (req, res) => {
 
 export const updateNavbarItem = async (req, res) => {
   try {
-    const item = await NavbarItem.findByIdAndUpdate(
-      req.params.id, 
-      req.body, 
-      { 
-        new: true,
-        runValidators: true
-      }
-    );
+    const filter = buildIdFilter(req.params.id);
+    const data = cleanUpdateData(req.body);
+    const item = await NavbarItem.findOneAndUpdate(filter, data, { new: true, runValidators: true });
     
     if (!item) {
       return res.status(404).json({ 
@@ -485,7 +478,8 @@ export const updateNavbarItem = async (req, res) => {
 
 export const deleteNavbarItem = async (req, res) => {
   try {
-    const item = await NavbarItem.findByIdAndDelete(req.params.id);
+    const filter = buildIdFilter(req.params.id);
+    const item = await NavbarItem.findOneAndDelete(filter);
     if (!item) {
       return res.status(404).json({ 
         success: false,

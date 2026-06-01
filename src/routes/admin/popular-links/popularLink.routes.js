@@ -1,5 +1,6 @@
 import express from "express";
 import PopularLink from "../../../models/PopularLink.js";
+import { buildIdFilter, cleanUpdateData } from "../../../utils/idHelper.js";
 
 const router = express.Router();
 
@@ -23,7 +24,9 @@ router.post("/create", async (req, res) => {
 
 router.put("/update/:id", async (req, res) => {
   try {
-    const link = await PopularLink.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    const filter = buildIdFilter(req.params.id);
+    const data = cleanUpdateData(req.body);
+    const link = await PopularLink.findOneAndUpdate(filter, data, { new: true });
     if (!link) return res.status(404).json({ success: false, error: "Link not found" });
     res.json({ success: true, data: link });
   } catch (error) {
@@ -33,7 +36,8 @@ router.put("/update/:id", async (req, res) => {
 
 router.delete("/delete/:id", async (req, res) => {
   try {
-    const link = await PopularLink.findByIdAndDelete(req.params.id);
+    const filter = buildIdFilter(req.params.id);
+    const link = await PopularLink.findOneAndDelete(filter);
     if (!link) return res.status(404).json({ success: false, error: "Link not found" });
     res.json({ success: true, message: "Link deleted" });
   } catch (error) {

@@ -1,4 +1,5 @@
 import FooterLink from '../models/FooterLink.js';
+import { buildIdFilter, cleanUpdateData } from '../utils/idHelper.js';
 
 // Get all footer links
 export const getFooterLinks = async (req, res) => {
@@ -154,7 +155,7 @@ export const updateFooterLink = async (req, res) => {
     
     // Handle empty updates - just return success if no valid fields to update
     if (Object.keys(updateData).length === 0) {
-      const existingLink = await FooterLink.findById(id);
+      const existingLink = await FooterLink.findOne(buildIdFilter(id));
       if (!existingLink) {
         return res.status(404).json({
           success: false,
@@ -183,8 +184,9 @@ export const updateFooterLink = async (req, res) => {
       });
     }
     
-    const footerLink = await FooterLink.findByIdAndUpdate(
-      id,
+    const filter = buildIdFilter(id);
+    const footerLink = await FooterLink.findOneAndUpdate(
+      filter,
       updateData,
       { new: true, runValidators: true }
     );
@@ -244,8 +246,8 @@ export const updateFooterLink = async (req, res) => {
 export const deleteFooterLink = async (req, res) => {
   try {
     const { id } = req.params;
-    
-    const footerLink = await FooterLink.findByIdAndDelete(id);
+    const filter = buildIdFilter(id);
+    const footerLink = await FooterLink.findOneAndDelete(filter);
     
     if (!footerLink) {
       return res.status(404).json({

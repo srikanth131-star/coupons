@@ -1,5 +1,7 @@
 import express from "express";
 import BlogArticle from "../../../models/BlogArticle.js";
+import mongoose from "mongoose";
+import { buildIdFilter, cleanUpdateData } from "../../../utils/idHelper.js";
 
 const router = express.Router();
 
@@ -23,7 +25,9 @@ router.post("/create", async (req, res) => {
 
 router.put("/update/:id", async (req, res) => {
   try {
-    const article = await BlogArticle.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    const filter = buildIdFilter(req.params.id);
+    const data = cleanUpdateData(req.body);
+    const article = await BlogArticle.findOneAndUpdate(filter, data, { new: true });
     if (!article) return res.status(404).json({ success: false, error: "Article not found" });
     res.json({ success: true, data: article });
   } catch (error) {
@@ -33,7 +37,8 @@ router.put("/update/:id", async (req, res) => {
 
 router.delete("/delete/:id", async (req, res) => {
   try {
-    const article = await BlogArticle.findByIdAndDelete(req.params.id);
+    const filter = buildIdFilter(req.params.id);
+    const article = await BlogArticle.findOneAndDelete(filter);
     if (!article) return res.status(404).json({ success: false, error: "Article not found" });
     res.json({ success: true, message: "Article deleted" });
   } catch (error) {
@@ -45,7 +50,8 @@ router.post("/bulk-delete", async (req, res) => {
   try {
     const { ids } = req.body;
     if (!ids?.length) return res.status(400).json({ success: false, error: "No IDs provided" });
-    const result = await BlogArticle.deleteMany({ _id: { $in: ids } });
+    const objectIds = ids.map(id => mongoose.Types.ObjectId.isValid(id) ? new mongoose.Types.ObjectId(id) : id);
+    const result = await BlogArticle.deleteMany({ $or: [{ _id: { $in: objectIds } }, { _id: { $in: ids } }] });
     res.json({ success: true, message: `${result.deletedCount} article(s) deleted` });
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });

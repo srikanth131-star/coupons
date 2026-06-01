@@ -1,7 +1,9 @@
+import mongoose from "mongoose";
 import Coupon from "../models/Coupon.js";
 import { CouponClick } from "../models/index.js";
 import ga4Analytics from "../utils/ga4Analytics.js";
 import { getClientId, getUserProperties } from "../middleware/ga4Analytics.js";
+import { buildIdFilter, cleanUpdateData } from "../utils/idHelper.js";
 
 export const getCoupons = async (req, res) => {
   const clientId = getClientId(req);
@@ -65,10 +67,9 @@ export const getCouponById = async (req, res) => {
   const clientId = getClientId(req);
   
   try {
-    let coupon = await Coupon.findById(req.params.id).populate("store category tags");
-    if (!coupon) {
-      coupon = await Coupon.findOne({ _id: req.params.id }).populate("store category tags");
-    }
+    const filter = buildIdFilter(req.params.id);
+    
+    let coupon = await Coupon.findOne(filter).populate("store category tags");
     
     if (!coupon) {
       await ga4Analytics.trackError('/api/coupons/:id', 'GET', 'Coupon not found', 404, clientId);
@@ -144,10 +145,11 @@ export const updateCoupon = async (req, res) => {
   const clientId = getClientId(req);
   
   try {
-    let coupon = await Coupon.findByIdAndUpdate(req.params.id, req.body, { new: true });
-    if (!coupon) {
-      coupon = await Coupon.findOneAndUpdate({ _id: req.params.id }, req.body, { new: true });
-    }
+    const id = req.params.id;
+    const updateData = cleanUpdateData(req.body);
+    const filter = buildIdFilter(id);
+    
+    let coupon = await Coupon.findOneAndUpdate(filter, updateData, { new: true });
     
     if (!coupon) {
       await ga4Analytics.trackError('/api/coupons/:id', 'PUT', 'Coupon not found', 404, clientId);
@@ -177,11 +179,11 @@ export const deleteCoupon = async (req, res) => {
   const clientId = getClientId(req);
   
   try {
-    console.log(`[DELETE COUPON] Attempting to delete coupon: ${req.params.id}`);
-    let coupon = await Coupon.findByIdAndDelete(req.params.id);
-    if (!coupon) {
-      coupon = await Coupon.findOneAndDelete({ _id: req.params.id });
-    }
+    const id = req.params.id;
+    const filter = buildIdFilter(id);
+    console.log(`[DELETE COUPON] Attempting to delete coupon: ${id}`);
+    
+    let coupon = await Coupon.findOneAndDelete(filter);
     
     if (!coupon) {
       console.log(`[DELETE COUPON] Coupon not found: ${req.params.id}`);
@@ -213,7 +215,8 @@ export const trackClick = async (req, res) => {
   const clientId = getClientId(req);
   
   try {
-    const coupon = await Coupon.findById(req.params.id).populate('store');
+    const filter = buildIdFilter(req.params.id);
+    const coupon = await Coupon.findOne(filter).populate('store');
     
     if (!coupon) {
       await ga4Analytics.trackError('/api/coupons/:id/click', 'POST', 'Coupon not found', 404, clientId);
@@ -222,7 +225,8 @@ export const trackClick = async (req, res) => {
     
     const oldClickCount = coupon.clickCount;
     
-    await Coupon.findByIdAndUpdate(req.params.id, { $inc: { clickCount: 1 } });
+    const clickFilter = buildIdFilter(req.params.id);
+    await Coupon.findOneAndUpdate(clickFilter, { $inc: { clickCount: 1 } });
     await CouponClick.create({
       coupon: req.params.id,
       ipAddress: req.ip,

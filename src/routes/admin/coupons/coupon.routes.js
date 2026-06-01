@@ -22,11 +22,13 @@ router.post("/bulk-delete", async (req, res) => {
     const CouponClick = mongoose.model("CouponClick");
     const FeaturedCoupon = mongoose.model("FeaturedCoupon");
 
+    const objectIds = ids.filter(id => mongoose.Types.ObjectId.isValid(id)).map(id => new mongoose.Types.ObjectId(id));
+
     await Promise.all([
-      CouponClick.deleteMany({ couponId: { $in: ids } }),
-      FeaturedCoupon.deleteMany({ couponId: { $in: ids } }),
+      CouponClick.deleteMany({ $or: [{ couponId: { $in: objectIds } }, { couponId: { $in: ids } }] }),
+      FeaturedCoupon.deleteMany({ $or: [{ couponId: { $in: objectIds } }, { couponId: { $in: ids } }] }),
     ]);
-    const result = await Coupon.deleteMany({ _id: { $in: ids } });
+    const result = await Coupon.deleteMany({ $or: [{ _id: { $in: objectIds } }, { _id: { $in: ids } }] });
     res.json({ message: `${result.deletedCount} coupon(s) deleted` });
   } catch (error) {
     res.status(500).json({ error: error.message });
