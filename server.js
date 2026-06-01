@@ -71,7 +71,8 @@ app.use('/api', routes);
 app.get('/', (req, res) => {
   res.json({
     message: 'Coupons Feast API Running',
-    version: '1.0.0',
+    version: '2.0.1',
+    build: '2026-06-01-mixed-id-fix',
     totalAPIs: 16,
     testEndpoint: '/api/test',
     documentation: '/api/test/status',
