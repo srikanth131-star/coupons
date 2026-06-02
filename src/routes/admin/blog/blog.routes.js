@@ -50,10 +50,14 @@ router.post("/bulk-delete", async (req, res) => {
   try {
     const { ids } = req.body;
     if (!ids?.length) return res.status(400).json({ success: false, error: "No IDs provided" });
-    const objectIds = ids.map(id => mongoose.Types.ObjectId.isValid(id) ? new mongoose.Types.ObjectId(id) : id);
-    const result = await BlogArticle.deleteMany({ $or: [{ _id: { $in: objectIds } }, { _id: { $in: ids } }] });
+    
+    const db = mongoose.connection.db;
+    const objectIds = ids.filter(id => mongoose.Types.ObjectId.isValid(id)).map(id => new mongoose.Types.ObjectId(id));
+    const result = await db.collection('blogarticles').deleteMany({ $or: [{ _id: { $in: objectIds } }, { _id: { $in: ids } }] });
+    console.log(`[BULK DELETE BLOG] Requested: ${ids.length}, Deleted: ${result.deletedCount}`);
     res.json({ success: true, message: `${result.deletedCount} article(s) deleted` });
   } catch (error) {
+    console.error(`[BULK DELETE BLOG] Error:`, error.message);
     res.status(500).json({ success: false, error: error.message });
   }
 });

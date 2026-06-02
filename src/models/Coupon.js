@@ -5,7 +5,7 @@ const couponSchema = new mongoose.Schema({
   code: { type: String, default: '' },
   description: String,
   discount: String,
-  store: { type: mongoose.Schema.Types.ObjectId, ref: "Store", required: true },
+  store: { type: mongoose.Schema.Types.ObjectId, ref: "Store" },
   category: { type: String, default: '' },
   tags: { type: [String], default: [] },
   expiryDate: Date,

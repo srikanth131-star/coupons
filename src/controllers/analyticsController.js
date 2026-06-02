@@ -162,7 +162,7 @@ export const getCouponsByCategory = async (req, res) => {
     const coupons = await Coupon.find({ 
       category: category,
       isActive: true 
-    }).populate('store category');
+    }).populate('store');
     
     // Track category coupons request
     ga4Analytics.sendEvent('category_coupons_request', {

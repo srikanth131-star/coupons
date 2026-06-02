@@ -37,7 +37,20 @@ router.put("/update/:id", async (req, res) => {
     
     let deal = await Deal.findOneAndUpdate(filter, data, { new: true });
     
+    // Fallback to native driver for legacy Mixed _id data
     if (!deal) {
+      const db = mongoose.connection.db;
+      const objectId = mongoose.Types.ObjectId.isValid(id) ? new mongoose.Types.ObjectId(id) : null;
+      const nativeFilter = objectId ? { $or: [{ _id: objectId }, { _id: id }] } : { _id: id };
+      const result = await db.collection('deals').findOneAndUpdate(
+        nativeFilter, 
+        { $set: { ...data, updatedAt: new Date() } },
+        { returnDocument: 'after' }
+      );
+      if (result) {
+        console.log(`[UPDATE DEAL] Updated via native driver: ${id}`);
+        return res.json({ success: true, data: result });
+      }
       console.log(`[UPDATE DEAL] Deal not found with id: ${id}`);
       return res.status(404).json({ success: false, error: "Deal not found" });
     }
@@ -57,10 +70,21 @@ router.delete("/delete/:id", async (req, res) => {
     const filter = buildIdFilter(id);
     console.log(`[DELETE DEAL] Attempting to delete deal: ${id}`);
     let deal = await Deal.findOneAndDelete(filter);
+    
+    // Fallback to native driver for legacy Mixed _id data
     if (!deal) {
+      const db = mongoose.connection.db;
+      const objectId = mongoose.Types.ObjectId.isValid(id) ? new mongoose.Types.ObjectId(id) : null;
+      const nativeFilter = objectId ? { $or: [{ _id: objectId }, { _id: id }] } : { _id: id };
+      const result = await db.collection('deals').findOneAndDelete(nativeFilter);
+      if (result) {
+        console.log(`[DELETE DEAL] Deleted via native driver: ${id}`);
+        return res.json({ success: true, message: "Deal deleted" });
+      }
       console.log(`[DELETE DEAL] Deal not found: ${id}`);
       return res.status(404).json({ success: false, error: "Deal not found" });
     }
+    
     console.log(`[DELETE DEAL] Successfully deleted: ${deal.title} (${id})`);
     res.json({ success: true, message: "Deal deleted" });
   } catch (error) {
@@ -74,10 +98,18 @@ router.post("/bulk-delete", async (req, res) => {
   try {
     const { ids } = req.body;
     if (!ids?.length) return res.status(400).json({ success: false, error: "No IDs provided" });
-    const objectIds = ids.map(id => mongoose.Types.ObjectId.isValid(id) ? new mongoose.Types.ObjectId(id) : id);
-    const result = await Deal.deleteMany({ $or: [{ _id: { $in: objectIds } }, { _id: { $in: ids } }] });
+    const objectIds = ids.filter(id => mongoose.Types.ObjectId.isValid(id)).map(id => new mongoose.Types.ObjectId(id));
+    
+    // Use native collection to bypass Mongoose schema casting for legacy Mixed _id data
+    const db = mongoose.connection.db;
+    const result = await db.collection('deals').deleteMany({
+      $or: [{ _id: { $in: objectIds } }, { _id: { $in: ids } }]
+    });
+    
+    console.log(`[BULK DELETE DEALS] Requested: ${ids.length}, Deleted: ${result.deletedCount}`);
     res.json({ success: true, message: `${result.deletedCount} deal(s) deleted` });
   } catch (error) {
+    console.error(`[BULK DELETE DEALS] Error:`, error.message);
     res.status(500).json({ success: false, error: error.message });
   }
 });

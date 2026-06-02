@@ -9,10 +9,11 @@ import mongoose from 'mongoose';
  * @returns {object} MongoDB query filter using $or for both types
  */
 export const buildIdFilter = (id) => {
-  const objectId = mongoose.Types.ObjectId.isValid(id) 
-    ? new mongoose.Types.ObjectId(id) 
-    : id;
-  return { $or: [{ _id: objectId }, { _id: id }] };
+  if (mongoose.Types.ObjectId.isValid(id)) {
+    const objectId = new mongoose.Types.ObjectId(id);
+    return { $or: [{ _id: objectId }, { _id: id }] };
+  }
+  return { _id: id };
 };
 
 /**
@@ -39,4 +40,78 @@ export const excludeIdFilter = (id) => {
     ? new mongoose.Types.ObjectId(id) 
     : id;
   return { $nin: [id, objectId] };
+};
+
+/**
+ * Delete a document using native MongoDB driver to bypass Mongoose casting.
+ * Used when documents may have been created with _id: Mixed schema.
+ * 
+ * @param {string} collectionName - MongoDB collection name
+ * @param {string} id - Document ID to delete
+ * @returns {object} { deleted: boolean, doc: object|null }
+ */
+export const nativeDeleteById = async (collectionName, id) => {
+  const db = mongoose.connection.db;
+  const collection = db.collection(collectionName);
+  
+  const objectId = mongoose.Types.ObjectId.isValid(id) 
+    ? new mongoose.Types.ObjectId(id) 
+    : null;
+  
+  const filter = objectId 
+    ? { $or: [{ _id: objectId }, { _id: id }] }
+    : { _id: id };
+  
+  const doc = await collection.findOneAndDelete(filter);
+  return { deleted: !!doc, doc };
+};
+
+/**
+ * Find a document using native MongoDB driver to bypass Mongoose casting.
+ * 
+ * @param {string} collectionName - MongoDB collection name
+ * @param {string} id - Document ID to find
+ * @returns {object|null}
+ */
+export const nativeFindById = async (collectionName, id) => {
+  const db = mongoose.connection.db;
+  const collection = db.collection(collectionName);
+  
+  const objectId = mongoose.Types.ObjectId.isValid(id) 
+    ? new mongoose.Types.ObjectId(id) 
+    : null;
+  
+  const filter = objectId 
+    ? { $or: [{ _id: objectId }, { _id: id }] }
+    : { _id: id };
+  
+  return await collection.findOne(filter);
+};
+
+/**
+ * Update a document using native MongoDB driver to bypass Mongoose casting.
+ * 
+ * @param {string} collectionName - MongoDB collection name
+ * @param {string} id - Document ID to update
+ * @param {object} data - Fields to update
+ * @returns {object|null}
+ */
+export const nativeUpdateById = async (collectionName, id, data) => {
+  const db = mongoose.connection.db;
+  const collection = db.collection(collectionName);
+  
+  const objectId = mongoose.Types.ObjectId.isValid(id) 
+    ? new mongoose.Types.ObjectId(id) 
+    : null;
+  
+  const filter = objectId 
+    ? { $or: [{ _id: objectId }, { _id: id }] }
+    : { _id: id };
+  
+  const result = await collection.findOneAndUpdate(
+    filter, 
+    { $set: { ...data, updatedAt: new Date() } }, 
+    { returnDocument: 'after' }
+  );
+  return result;
 };

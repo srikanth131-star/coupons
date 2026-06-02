@@ -18,19 +18,40 @@ router.post("/bulk-delete", async (req, res) => {
     const { ids } = req.body;
     if (!ids?.length) return res.status(400).json({ error: "No IDs provided" });
 
-    const Coupon = mongoose.model("Coupon");
-    const CouponClick = mongoose.model("CouponClick");
-    const FeaturedCoupon = mongoose.model("FeaturedCoupon");
+    // Build all possible _id representations to handle Mixed _id legacy data
+    const objectIds = ids
+      .filter(id => mongoose.Types.ObjectId.isValid(id))
+      .map(id => new mongoose.Types.ObjectId(id));
 
-    const objectIds = ids.filter(id => mongoose.Types.ObjectId.isValid(id)).map(id => new mongoose.Types.ObjectId(id));
+    // Use native collection to bypass Mongoose schema casting
+    // This handles _id stored as ObjectId, string, or Mixed type
+    const db = mongoose.connection.db;
+    const couponCollection = db.collection('coupons');
+    const couponClickCollection = db.collection('couponclicks');
+    const featuredCouponCollection = db.collection('featuredcoupons');
 
+    // Delete related data first
+    const idFilter = { $or: [
+      { couponId: { $in: objectIds } },
+      { couponId: { $in: ids } }
+    ]};
     await Promise.all([
-      CouponClick.deleteMany({ $or: [{ couponId: { $in: objectIds } }, { couponId: { $in: ids } }] }),
-      FeaturedCoupon.deleteMany({ $or: [{ couponId: { $in: objectIds } }, { couponId: { $in: ids } }] }),
+      couponClickCollection.deleteMany(idFilter),
+      featuredCouponCollection.deleteMany(idFilter),
     ]);
-    const result = await Coupon.deleteMany({ $or: [{ _id: { $in: objectIds } }, { _id: { $in: ids } }] });
+
+    // Delete coupons - match both ObjectId and string _id formats
+    const result = await couponCollection.deleteMany({
+      $or: [
+        { _id: { $in: objectIds } },
+        { _id: { $in: ids } }
+      ]
+    });
+
+    console.log(`[BULK DELETE COUPONS] Requested: ${ids.length}, Deleted: ${result.deletedCount}`);
     res.json({ message: `${result.deletedCount} coupon(s) deleted` });
   } catch (error) {
+    console.error(`[BULK DELETE COUPONS] Error:`, error.message);
     res.status(500).json({ error: error.message });
   }
 });

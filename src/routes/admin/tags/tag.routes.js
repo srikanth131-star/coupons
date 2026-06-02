@@ -20,27 +20,22 @@ router.delete("/delete/:id", tagController.deleteTag);
 
 // POST /api/admin/tags/bulk-delete
 router.post("/bulk-delete", async (req, res) => {
-  const { Tag } = await import("../../../models/index.js");
   const mongoose = (await import("mongoose")).default;
   try {
     const { ids } = req.body;
     if (!ids?.length) return res.status(400).json({ error: 'No IDs provided' });
     
-    // Handle both ObjectId and string _id formats
     const objectIds = ids
       .filter(id => mongoose.Types.ObjectId.isValid(id))
       .map(id => new mongoose.Types.ObjectId(id));
     
-    // Try matching by _id with both formats, and also by string comparison
-    const result = await Tag.deleteMany({ 
-      $or: [
-        { _id: { $in: objectIds } },
-        { _id: { $in: ids } },
-        { _id: { $in: ids.map(id => id.toString()) } }
-      ]
+    // Use native collection to bypass Mongoose schema casting for legacy Mixed _id data
+    const db = mongoose.connection.db;
+    const result = await db.collection('tags').deleteMany({
+      $or: [{ _id: { $in: objectIds } }, { _id: { $in: ids } }]
     });
     
-    console.log(`[BULK DELETE TAGS] Requested: ${ids.length}, Deleted: ${result.deletedCount}, IDs: ${JSON.stringify(ids)}`);
+    console.log(`[BULK DELETE TAGS] Requested: ${ids.length}, Deleted: ${result.deletedCount}, IDs: ${JSON.stringify(ids.slice(0, 5))}`);
     res.json({ message: `${result.deletedCount} tag(s) deleted` });
   } catch (error) {
     console.error(`[BULK DELETE TAGS] Error:`, error.message);

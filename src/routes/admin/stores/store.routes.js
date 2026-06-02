@@ -28,21 +28,23 @@ router.delete("/delete/:id", storeController.deleteStore);
 
 // POST /api/admin/stores/bulk-delete
 router.post("/bulk-delete", async (req, res) => {
-  const Store = (await import("../../../models/Store.js")).default;
-  const Coupon = (await import("../../../models/Coupon.js")).default;
   const mongoose = (await import("mongoose")).default;
   try {
     const { ids, deleteCoupons } = req.body;
     if (!ids?.length) return res.status(400).json({ error: 'No IDs provided' });
     const objectIds = ids.filter(id => mongoose.Types.ObjectId.isValid(id)).map(id => new mongoose.Types.ObjectId(id));
+    
+    const db = mongoose.connection.db;
     let couponsDeleted = 0;
     if (deleteCoupons) {
-      const couponResult = await Coupon.deleteMany({ $or: [{ store: { $in: objectIds } }, { store: { $in: ids } }] });
+      const couponResult = await db.collection('coupons').deleteMany({ $or: [{ store: { $in: objectIds } }, { store: { $in: ids } }] });
       couponsDeleted = couponResult.deletedCount;
     }
-    const result = await Store.deleteMany({ $or: [{ _id: { $in: objectIds } }, { _id: { $in: ids } }] });
+    const result = await db.collection('stores').deleteMany({ $or: [{ _id: { $in: objectIds } }, { _id: { $in: ids } }] });
+    console.log(`[BULK DELETE STORES] Requested: ${ids.length}, Deleted: ${result.deletedCount}`);
     res.json({ message: `${result.deletedCount} store(s) deleted, ${couponsDeleted} coupon(s) removed` });
   } catch (error) {
+    console.error(`[BULK DELETE STORES] Error:`, error.message);
     res.status(500).json({ error: error.message });
   }
 });

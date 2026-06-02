@@ -32,8 +32,19 @@ export const updateCategory = async (req, res) => {
   try {
     const filter = buildIdFilter(req.params.id);
     const data = cleanUpdateData(req.body);
-    const category = await Category.findOneAndUpdate(filter, data, { new: true, runValidators: true });
+    let category = await Category.findOneAndUpdate(filter, data, { new: true, runValidators: true });
+    
+    // Fallback to native driver for legacy Mixed _id data
     if (!category) {
+      const mongoose = (await import('mongoose')).default;
+      const db = mongoose.connection.db;
+      const id = req.params.id;
+      const objectId = mongoose.Types.ObjectId.isValid(id) ? new mongoose.Types.ObjectId(id) : null;
+      const nativeFilter = objectId ? { $or: [{ _id: objectId }, { _id: id }] } : { _id: id };
+      const result = await db.collection('categories').findOneAndUpdate(
+        nativeFilter, { $set: { ...data, updatedAt: new Date() } }, { returnDocument: 'after' }
+      );
+      if (result) return res.json(result);
       return res.status(404).json({ error: 'Category not found' });
     }
     res.json(category);
@@ -51,8 +62,17 @@ export const updateCategory = async (req, res) => {
 export const deleteCategory = async (req, res) => {
   try {
     const filter = buildIdFilter(req.params.id);
-    const category = await Category.findOneAndDelete(filter);
+    let category = await Category.findOneAndDelete(filter);
+    
+    // Fallback to native driver for legacy Mixed _id data
     if (!category) {
+      const mongoose = (await import('mongoose')).default;
+      const db = mongoose.connection.db;
+      const id = req.params.id;
+      const objectId = mongoose.Types.ObjectId.isValid(id) ? new mongoose.Types.ObjectId(id) : null;
+      const nativeFilter = objectId ? { $or: [{ _id: objectId }, { _id: id }] } : { _id: id };
+      const result = await db.collection('categories').findOneAndDelete(nativeFilter);
+      if (result) return res.json({ message: 'Category deleted successfully' });
       return res.status(404).json({ error: 'Category not found' });
     }
     res.json({ message: 'Category deleted successfully' });

@@ -10,11 +10,10 @@ export const getCoupons = async (req, res) => {
   const userProps = getUserProperties(req);
   
   try {
-    const { sort, store, category, tag, limit = 20, status } = req.query;
+    const { sort, store, category, tag, limit, status } = req.query;
     let query = {};
     
     // For admin routes, show all coupons; for public, only active
-    // If status filter is provided, use it; otherwise default to active only for public
     if (status === 'all') {
       // No filter - show all
     } else if (status === 'inactive') {
@@ -30,10 +29,18 @@ export const getCoupons = async (req, res) => {
     
     const sortOption = sort === "clickCount" ? { clickCount: -1 } : { createdAt: -1 };
     
-    const coupons = await Coupon.find(query)
-      .populate("store category")
-      .sort(sortOption)
-      .limit(parseInt(limit));
+    // Admin gets all coupons, public gets limited
+    const queryLimit = limit ? parseInt(limit) : (req.adminId ? 0 : 20);
+    
+    let couponQuery = Coupon.find(query)
+      .populate("store")
+      .sort(sortOption);
+    
+    if (queryLimit > 0) {
+      couponQuery = couponQuery.limit(queryLimit);
+    }
+    
+    const coupons = await couponQuery;
     
     // Enhanced coupon listing tracking
     ga4Analytics.sendEvent('coupons_list_request', {
@@ -69,7 +76,7 @@ export const getCouponById = async (req, res) => {
   try {
     const filter = buildIdFilter(req.params.id);
     
-    let coupon = await Coupon.findOne(filter).populate("store category tags");
+    let coupon = await Coupon.findOne(filter).populate("store");
     
     if (!coupon) {
       await ga4Analytics.trackError('/api/coupons/:id', 'GET', 'Coupon not found', 404, clientId);
@@ -101,12 +108,21 @@ export const createCoupon = async (req, res) => {
   const clientId = getClientId(req);
   
   try {
-    const coupon = await Coupon.create(req.body);
+    const data = { ...req.body };
+    // Remove _id and system fields if sent
+    delete data._id;
+    delete data.__v;
+    delete data.createdAt;
+    delete data.updatedAt;
+    // Remove empty store to avoid ObjectId cast error
+    if (!data.store) delete data.store;
+    
+    const coupon = await Coupon.create(data);
     
     // Track coupon creation
     ga4Analytics.sendEvent('coupon_created', {
       coupon_id: coupon._id.toString(),
-      store_id: coupon.store.toString(),
+      store_id: coupon.store ? coupon.store.toString() : 'no_store',
       coupon_code: coupon.code,
       category: coupon.category,
       event_category: 'Admin'
@@ -149,9 +165,25 @@ export const updateCoupon = async (req, res) => {
     const updateData = cleanUpdateData(req.body);
     const filter = buildIdFilter(id);
     
+    // Remove empty store to avoid ObjectId cast error
+    if (!updateData.store) delete updateData.store;
+    
     let coupon = await Coupon.findOneAndUpdate(filter, updateData, { new: true });
     
+    // Fallback to native driver for legacy Mixed _id data
     if (!coupon) {
+      const mongoose = (await import('mongoose')).default;
+      const db = mongoose.connection.db;
+      const objectId = mongoose.Types.ObjectId.isValid(id) ? new mongoose.Types.ObjectId(id) : null;
+      const nativeFilter = objectId ? { $or: [{ _id: objectId }, { _id: id }] } : { _id: id };
+      const result = await db.collection('coupons').findOneAndUpdate(
+        nativeFilter, { $set: { ...updateData, updatedAt: new Date() } }, { returnDocument: 'after' }
+      );
+      if (result) {
+        ga4Analytics.trackDatabaseOperation('update', 'coupons', true, clientId)
+          .catch(err => console.error('GA4 DB tracking failed:', err.message));
+        return res.json(result);
+      }
       await ga4Analytics.trackError('/api/coupons/:id', 'PUT', 'Coupon not found', 404, clientId);
       return res.status(404).json({ error: "Coupon not found" });
     }
@@ -185,8 +217,18 @@ export const deleteCoupon = async (req, res) => {
     
     let coupon = await Coupon.findOneAndDelete(filter);
     
+    // Fallback to native driver if Mongoose couldn't find it (legacy Mixed _id data)
     if (!coupon) {
-      console.log(`[DELETE COUPON] Coupon not found: ${req.params.id}`);
+      const mongoose = (await import('mongoose')).default;
+      const db = mongoose.connection.db;
+      const objectId = mongoose.Types.ObjectId.isValid(id) ? new mongoose.Types.ObjectId(id) : null;
+      const nativeFilter = objectId ? { $or: [{ _id: objectId }, { _id: id }] } : { _id: id };
+      const result = await db.collection('coupons').findOneAndDelete(nativeFilter);
+      if (result) {
+        console.log(`[DELETE COUPON] Deleted via native driver: ${id}`);
+        return res.json({ message: "Coupon deleted" });
+      }
+      console.log(`[DELETE COUPON] Coupon not found: ${id}`);
       await ga4Analytics.trackError('/api/coupons/:id', 'DELETE', 'Coupon not found', 404, clientId);
       return res.status(404).json({ error: "Coupon not found" });
     }
@@ -215,23 +257,41 @@ export const trackClick = async (req, res) => {
   const clientId = getClientId(req);
   
   try {
-    const filter = buildIdFilter(req.params.id);
+    const id = req.params.id;
+    const filter = buildIdFilter(id);
     const coupon = await Coupon.findOne(filter).populate('store');
     
     if (!coupon) {
+      // Fallback: try native driver
+      const mongoose = (await import('mongoose')).default;
+      const db = mongoose.connection.db;
+      const objectId = mongoose.Types.ObjectId.isValid(id) ? new mongoose.Types.ObjectId(id) : null;
+      const nativeFilter = objectId ? { $or: [{ _id: objectId }, { _id: id }] } : { _id: id };
+      const nativeDoc = await db.collection('coupons').findOneAndUpdate(
+        nativeFilter, { $inc: { clickCount: 1 } }, { returnDocument: 'after' }
+      );
+      if (nativeDoc) {
+        await CouponClick.create({ coupon: id, ipAddress: req.ip, userAgent: req.get("user-agent") }).catch(() => {});
+        return res.json({ message: "Click tracked" });
+      }
       await ga4Analytics.trackError('/api/coupons/:id/click', 'POST', 'Coupon not found', 404, clientId);
       return res.status(404).json({ error: "Coupon not found" });
     }
     
     const oldClickCount = coupon.clickCount;
     
-    const clickFilter = buildIdFilter(req.params.id);
-    await Coupon.findOneAndUpdate(clickFilter, { $inc: { clickCount: 1 } });
+    // Use native driver to ensure the increment works regardless of _id type
+    const mongoose = (await import('mongoose')).default;
+    const db = mongoose.connection.db;
+    const objectId = mongoose.Types.ObjectId.isValid(id) ? new mongoose.Types.ObjectId(id) : null;
+    const nativeFilter = objectId ? { $or: [{ _id: objectId }, { _id: id }] } : { _id: id };
+    await db.collection('coupons').updateOne(nativeFilter, { $inc: { clickCount: 1 } });
+    
     await CouponClick.create({
-      coupon: req.params.id,
+      coupon: id,
       ipAddress: req.ip,
       userAgent: req.get("user-agent")
-    });
+    }).catch(() => {});
     
     // Track coupon click with detailed info
     if (coupon.store) {
