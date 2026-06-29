@@ -111,6 +111,34 @@ export const getStoreById = async (req, res) => {
   }
 };
 
+// POST /api/public/stores/track-click/:id - Increment a store's click count
+export const trackStoreClick = async (req, res) => {
+  const clientId = getClientId(req);
+
+  try {
+    const id = req.params.id;
+    const objectId = mongoose.Types.ObjectId.isValid(id) ? new mongoose.Types.ObjectId(id) : null;
+    // Match both ObjectId and legacy string/Mixed _id values.
+    const nativeFilter = objectId ? { $or: [{ _id: objectId }, { _id: id }] } : { _id: id };
+
+    const result = await mongoose.connection.db
+      .collection('stores')
+      .updateOne(nativeFilter, { $inc: { clickCount: 1 } });
+
+    if (!result.matchedCount) {
+      return res.status(404).json({ error: "Store not found" });
+    }
+
+    ga4Analytics.trackStoreOperation('click', id, undefined, clientId)
+      .catch(err => console.error('GA4 store click tracking failed:', err.message));
+
+    res.json({ message: "Click tracked" });
+  } catch (error) {
+    await ga4Analytics.trackError('/api/public/stores/track-click/:id', 'POST', error.message, 500, clientId);
+    res.status(500).json({ error: error.message });
+  }
+};
+
 export const createStore = async (req, res) => {
   const clientId = getClientId(req);
   

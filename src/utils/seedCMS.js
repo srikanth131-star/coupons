@@ -12,14 +12,14 @@ export const seedCMSData = async () => {
     const existingConfig = await SiteConfig.findOne();
     if (!existingConfig) {
       await SiteConfig.create({
-        siteName: "Coupons Script",
+        siteName: "Coupons Feast",
         
         seo: {
-          metaTitle: "Coupons Script - Best Deals & Coupons",
-          metaDescription: "Find the best deals, coupons, and discounts from top brands. Save money on your favorite products with Coupons Script.",
+          metaTitle: "Coupons Feast - Best Deals & Coupons",
+          metaDescription: "Find the best deals, coupons, and discounts from top brands. Save money on your favorite products with Coupons Feast.",
           metaKeywords: ["coupons", "deals", "discounts", "savings", "promo codes"],
           favicon: "/favicon.ico",
-          ogTitle: "Coupons Script - Best Deals & Coupons",
+          ogTitle: "Coupons Feast - Best Deals & Coupons",
           ogDescription: "Find the best deals, coupons, and discounts from top brands.",
           ogImage: "/og-image.jpg",
           twitterCard: "summary_large_image",
@@ -90,7 +90,7 @@ export const seedCMSData = async () => {
         },
         
         footer: {
-          copyright: "© Coupons Script 2026",
+          copyright: "© Coupons Feast 2026",
           email: "support@couponsscript.com",
           phone: "+1 (555) 123-4567",
           address: "123 Coupon Street, Deal City, DC 12345",
@@ -165,7 +165,7 @@ export const seedCMSData = async () => {
           { id: "section-4", order: 4, type: "popularStores", title: "Popular Stores", limit: 12 },
           { id: "section-5", order: 5, type: "topCoupons", title: "Today's Top Coupons & Offers", limit: 6 },
           { id: "section-6", order: 6, type: "dealsOfDay", title: "Deals Of The Day", limit: 4 },
-          { id: "section-7", order: 7, type: "collections", title: "Coupons Script Collections", limit: 4 },
+          { id: "section-7", order: 7, type: "collections", title: "Coupons Feast Collections", limit: 4 },
           { id: "section-8", order: 8, type: "trendingCoupons", title: "Trending Coupons", limit: 8 },
           { id: "section-9", order: 9, type: "topStores", title: "Top Stores", limit: 6 },
           { id: "section-10", order: 10, type: "latestCoupons", title: "Latest Coupons", limit: 10 },
@@ -212,8 +212,8 @@ export const seedCMSData = async () => {
           logo: "",
           logoWidth: 32,
           logoHeight: 40,
-          logoAlt: "Coupons Script",
-          cta: "Shop Coupons Script",
+          logoAlt: "Coupons Feast",
+          cta: "Shop Coupons Feast",
           image: "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=160&h=170&fit=crop",
           isActive: true,
           order: 3

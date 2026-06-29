@@ -3,6 +3,10 @@ import mongoose from "mongoose";
 const dealSchema = new mongoose.Schema({
   title: { type: String, required: true },
   description: String,
+  // SEO / meta data (editable from admin)
+  metaTitle: { type: String, default: '' },
+  metaDescription: { type: String, default: '' },
+  metaKeywords: { type: String, default: '' },
   discount: String,
   store: { type: mongoose.Schema.Types.ObjectId, ref: "Store" },
   category: { type: String, default: '' },

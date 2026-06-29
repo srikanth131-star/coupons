@@ -13,7 +13,7 @@ async function seed() {
   if (!stores.length) { console.log('❌ No stores. Create stores first.'); return; }
   console.log(`✅ Found ${stores.length} stores\n`);
 
-  // Hero banners — one per major store, relevant to Coupons Script
+  // Hero banners — one per major store, relevant to Coupons Feast
   const bannerData = [
     { store: 'amazon', label: 'MEGA SAVINGS', title: 'Up to 70% Off on Electronics & More', cta: 'SHOP AMAZON DEALS', bgColor: '#232f3e', textPanelBg: '#ffffff', image: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=900&h=400&fit=crop', secondaryImage: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400&h=400&fit=crop' },
     { store: 'flipkart', label: 'BIG BILLION DAYS', title: 'Flipkart Sale — Flat 50% Off Fashion', cta: 'GRAB THE DEALS', bgColor: '#2874f0', textPanelBg: '#ffffff', image: 'https://images.unsplash.com/photo-1483985988355-763728e1935b?w=900&h=400&fit=crop', secondaryImage: 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=400&h=400&fit=crop' },

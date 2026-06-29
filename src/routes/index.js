@@ -189,7 +189,7 @@ router.get("/test", (req, res) => {
 router.get("/status", (req, res) => {
   res.json({
     status: "operational",
-    message: "Coupons Script Unified API is running",
+    message: "Coupons Feast Unified API is running",
     version: "3.0.0",
     architecture: "Unified Backend",
     categories: {

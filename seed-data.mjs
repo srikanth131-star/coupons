@@ -187,7 +187,7 @@ async function seed() {
       title: b.title, category: b.category, subtitle: b.subtitle,
       description: b.description, slug,
       image: blogImages[i],
-      content: [b.description, `Check out the latest ${b.category.toLowerCase()} deals and offers on Coupons Script. We update our deals daily to bring you the best savings.`, `Don't miss out — bookmark this page and check back regularly for new ${b.category.toLowerCase()} deals!`],
+      content: [b.description, `Check out the latest ${b.category.toLowerCase()} deals and offers on Coupons Feast. We update our deals daily to bring you the best savings.`, `Don't miss out — bookmark this page and check back regularly for new ${b.category.toLowerCase()} deals!`],
       isFeatured: i < 3, isActive: true,
     });
     console.log(`  📝 Blog: ${b.title}`);

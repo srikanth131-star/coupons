@@ -17,4 +17,7 @@ router.get("/list", storeController.getStores);
 // GET /api/public/stores/details/:slug - Get store by slug
 router.get("/details/:slug", storeController.getStoreBySlug);
 
+// POST /api/public/stores/track-click/:id - Track store click
+router.post("/track-click/:id", storeController.trackStoreClick);
+
 export default router;

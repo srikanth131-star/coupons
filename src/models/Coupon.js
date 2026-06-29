@@ -4,6 +4,10 @@ const couponSchema = new mongoose.Schema({
   title: { type: String, required: true },
   code: { type: String, default: '' },
   description: String,
+  // SEO / meta data (editable from admin)
+  metaTitle: { type: String, default: '' },
+  metaDescription: { type: String, default: '' },
+  metaKeywords: { type: String, default: '' },
   discount: String,
   store: { type: mongoose.Schema.Types.ObjectId, ref: "Store" },
   category: { type: String, default: '' },
@@ -22,7 +26,9 @@ const couponSchema = new mongoose.Schema({
   exclusive: { type: Boolean, default: false },
   details: { type: String, default: '' },
   affiliateUrl: { type: String, default: '' },
-  customLogo: { type: String, default: '' }
+  customLogo: { type: String, default: '' },
+  section: { type: String, default: '' },
+  displayImage: { type: String, default: '' }
 }, { timestamps: true });
 
 export default mongoose.model("Coupon", couponSchema);

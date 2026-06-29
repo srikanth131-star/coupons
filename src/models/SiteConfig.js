@@ -1,18 +1,18 @@
 import mongoose from "mongoose";
 
 const siteConfigSchema = new mongoose.Schema({
-  siteName: { type: String, default: "Coupons Script" },
-  siteDescription: { type: String, default: "Find the best deals, coupons, and discounts from top brands. Save money on your favorite products with Coupons Script." },
+  siteName: { type: String, default: "Coupons Feast" },
+  siteDescription: { type: String, default: "Find the best deals, coupons, and discounts from top brands. Save money on your favorite products with Coupons Feast." },
   contactEmail: { type: String, default: "support@couponsscript.com" },
   themeName: { type: String, default: "purple" },
   
   // SEO & Meta Tags
   seo: {
-    metaTitle: { type: String, default: "Coupons Script - Best Deals & Coupons" },
-    metaDescription: { type: String, default: "Find the best deals, coupons, and discounts from top brands. Save money on your favorite products with Coupons Script." },
+    metaTitle: { type: String, default: "Coupons Feast - Best Deals & Coupons" },
+    metaDescription: { type: String, default: "Find the best deals, coupons, and discounts from top brands. Save money on your favorite products with Coupons Feast." },
     metaKeywords: [{ type: String }],
     favicon: { type: String, default: "/favicon.ico" },
-    ogTitle: { type: String, default: "Coupons Script - Best Deals & Coupons" },
+    ogTitle: { type: String, default: "Coupons Feast - Best Deals & Coupons" },
     ogDescription: { type: String, default: "Find the best deals, coupons, and discounts from top brands." },
     ogImage: { type: String, default: "/og-image.jpg" },
     twitterCard: { type: String, default: "summary_large_image" },
@@ -117,7 +117,7 @@ const siteConfigSchema = new mongoose.Schema({
 
   // Footer Configuration
   footer: {
-    copyright: { type: String, default: "© Coupons Script 2026" },
+    copyright: { type: String, default: "© Coupons Feast 2026" },
     email: { type: String, default: "support@couponsscript.com" },
     phone: { type: String, default: "+1 (555) 123-4567" },
     address: { type: String, default: "123 Coupon Street, Deal City, DC 12345" },
@@ -232,6 +232,10 @@ const siteConfigSchema = new mongoose.Schema({
     clarity: {
       enabled: { type: Boolean, default: false },
       projectId: { type: String, default: process.env.CLARITY_PROJECT_ID || "" }
+    },
+    gtm: {
+      enabled: { type: Boolean, default: false },
+      containerId: { type: String, default: process.env.GTM_CONTAINER_ID || "" }
     },
     facebookPixel: {
       enabled: { type: Boolean, default: false },

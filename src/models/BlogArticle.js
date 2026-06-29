@@ -28,8 +28,13 @@ const blogArticleSchema = new mongoose.Schema({
   title: { type: String, required: true },
   slug: { type: String, required: true, unique: true },
   category: { type: String, default: '' },
+  tags: [{ type: String }],
   subtitle: { type: String, default: '' },
   description: { type: String, default: '' },
+  // SEO / meta data (editable from admin) — used by the blog article detail page
+  metaTitle: { type: String, default: '' },
+  metaDescription: { type: String, default: '' },
+  metaKeywords: { type: String, default: '' },
   image: { type: String, default: '' },
   content: [{ type: String }],
   contentParagraphs: [contentParagraphSchema],
